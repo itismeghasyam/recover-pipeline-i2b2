@@ -1,5 +1,7 @@
 ## recover-pipeline-i2b2
 
+[![Build and publish Docker image](https://github.com/pranavanba/recover-pipeline-i2b2/actions/workflows/docker-build-publish.yml/badge.svg)](https://github.com/pranavanba/recover-pipeline-i2b2/actions/workflows/docker-build-publish.yml)
+
 This repo hosts the code for the egress pipeline used by the MHDR (SageBionetworks) for data enrichment and i2b2 summarization of data.
 
 ## Requirements
