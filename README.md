@@ -1,6 +1,6 @@
 ## recover-pipeline-i2b2
 
-[![Build and publish Docker image](https://github.com/pranavanba/recover-pipeline-i2b2/actions/workflows/docker-build-publish.yml/badge.svg)](https://github.com/pranavanba/recover-pipeline-i2b2/actions/workflows/docker-build-publish.yml)
+[![Build and publish a Docker image](https://github.com/Sage-Bionetworks/recover-parquet-external/actions/workflows/docker-build.yml/badge.svg?branch=main)](https://github.com/Sage-Bionetworks/recover-parquet-external/actions/workflows/docker-build.yml)
 
 This repo hosts the code for the egress pipeline used by the MHDR (SageBionetworks) for data enrichment and i2b2 summarization of data.
 
@@ -19,7 +19,7 @@ There are two methods to run this pipeline: 1) **Docker container** or 2) **Manu
 
 ### Docker Container
 
-For the Docker method, there is a pre-published docker image available at [Packages](https://github.com/orgs/pranavanba/packages/container/package/recover-pipeline-i2b2).
+For the Docker method, there is a pre-published docker image available at [Packages](https://github.com/orgs/Sage-Bionetworks/packages/container/package/recover-pipeline-i2b2).
 
 The primary purpose of using the Docker method is that the docker image published from this repo contains instructions to:
 
@@ -50,7 +50,7 @@ source ~/.bash_profile
 2.  Pull the docker image
 
 ```Shell
-docker pull ghcr.io/pranavanba/recover-pipeline-i2b2:main
+docker pull ghcr.io/Sage-Bionetworks/recover-pipeline-i2b2:main
 ```
 
 3.  Run the docker container
@@ -65,7 +65,7 @@ docker run \
   -e CONCEPT_REPLACEMENTS=<named-vector-in-parentheses> \
   -e CONCEPT_FILTER_COL=<concept-map-column-name> \
   -e SYN_FOLDER_ID=<synapseID> \
-  ghcr.io/pranavanba/recover-pipeline-i2b2:main
+  ghcr.io/Sage-Bionetworks/recover-pipeline-i2b2:main
 ```
 
 For an explanation of the various environment variables required in the `docker run` command, please see [Environment Variables](#environment-variables).
@@ -93,7 +93,7 @@ source ~/.bash_profile
 2. Clone this repo
 
 ```Shell
-git clone https://github.com/pranavanba/recover-pipeline-i2b2.git
+git clone https://github.com/Sage-Bionetworks/recover-pipeline-i2b2.git
 ```
 
 4.  Build the docker image
@@ -149,7 +149,7 @@ source ~/.bash_profile
 2. Clone this repo or get just the [run-pipeline.R](run-pipeline.R) file
 
 ```Shell
-git clone https://github.com/pranavanba/recover-pipeline-i2b2.git
+git clone https://github.com/Sage-Bionetworks/recover-pipeline-i2b2.git
 ```
 
 2. Modify the variables and parameters in [run-pipeline.R](run-pipeline.R). If you do not modify how the values of the variables in [run-pipeline.R](run-pipeline.R) are read in, then you will need to set the values of those variables as environment variables. If you want to set the values of those variables in an R session, then either use the `Sys.setenv()` function or modify the file itself to assign values to variables the normal way in R, e.g. `var <- val`.
