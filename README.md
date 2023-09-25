@@ -167,3 +167,7 @@ Variable | Definition | Example
 | `CONCEPT_REPLACEMENTS` | A named vector of strings and their replacements. The names must be valid values of the `concept_filter_col` column of the `concept_map` data frame. For RECOVER, `concept_map` is the ontology file data frame. | "c('mins' = 'minutes', 'avghr' = 'averageheartrate', 'spo2' = 'spo2\_', 'hrv' = 'hrv_dailyrmssd', 'restinghr' = 'restingheartrate', 'sleepbrth' = 'sleepsummarybreath')" <br><br> *Must surround `c(…)` in parentheses (as indicated above) in `docker run …`*
 | `CONCEPT_FILTER_COL` | The column of the `concept_map` data frame that contains "approved concepts" (column names of dataset data frames that are not to be excluded). For RECOVER, `concept_map` is the ontology file data frame. | concept_cd
 | `SYN_FOLDER_ID` | A Synapse ID for a folder entity in Synapse where you want to store a file. | syn12345678
+| `method` | Either `synapse` or `sts` to specify the method to use in getting the parquet datasets. `synapse` will get files directly from a synapse project or folder using the synapse client, while `sts` will use sts-token access to get objects from an sts-enabled storage location, such as an S3 bucket. | synapse
+| `s3bucket` | The name of the S3 bucket to access when `method=sts`. | my-bucket
+| `s3basekey` | The base key of the S3 bucket to access when `method=sts`. | main/parquet/
+| `downloadLocation` | The location to download input files to. | ./parquet
