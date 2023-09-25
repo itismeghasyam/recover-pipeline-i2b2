@@ -7,7 +7,8 @@ RUN apt-get update -y && \
 RUN python3 -m pip install --upgrade pip
 RUN pip install synapseclient
 
-RUN R -e 'install.packages("synapser", repos = c("http://ran.synapse.org", "http://cran.fhcrc.org"))'
+RUN R -e 'install.packages("reticulate")'
+RUN R -e 'install.packages("synapser", repos=c("http://ran.synapse.org/", "https://cloud.r-project.org"))'
 RUN R -e 'install.packages("devtools")'
 RUN R -e 'devtools::install_github("Sage-Bionetworks/recoverSummarizeR")'
 
