@@ -11,7 +11,7 @@ RUN R -e 'install.packages("synapser", repos = c("http://ran.synapse.org", "http
 RUN R -e 'install.packages("devtools")'
 RUN R -e 'devtools::install_github("Sage-Bionetworks/recoverSummarizeR")'
 
-RUN curl -o /root/run-pipeline.R https://raw.githubusercontent.com/pranavanba/recover-pipeline-i2b2/main/run-pipeline.R
+RUN curl -o /root/run-pipeline.R https://raw.githubusercontent.com/Sage-Bionetworks/recover-pipeline-i2b2/main/run-pipeline.R
 
 WORKDIR /root
 
