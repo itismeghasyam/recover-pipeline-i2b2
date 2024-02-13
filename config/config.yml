@@ -1,0 +1,22 @@
+default:
+  default_key: "default_value"
+
+prod:
+  ontologyFileID: syn52050046
+  parquetDirID: syn53138638
+  dataset_name_filter: !expr c("fitbit","healthkit")
+  concept_replacements: !expr c("mins" = "minutes",
+                                "avghr" = "averageheartrate",
+                                "spo2" = "spo2_",
+                                "hrv" = "hrv_dailyrmssd",
+                                "restinghr" = "restingheartrate",
+                                "sleepbrth" = "sleepsummarybreath",
+                                "sleepstarttime" = "startdate",
+                                "sleependtime" = "enddate")
+  concept_filter_col: concept_cd
+  # synFolderID: syn18273645
+  method: sts
+  s3bucket: recover-main-project
+  s3basekey: main/archive/2023-12-06/
+  downloadLocation: ./temp-parquet
+  selectedVarsFileID: syn53503994
