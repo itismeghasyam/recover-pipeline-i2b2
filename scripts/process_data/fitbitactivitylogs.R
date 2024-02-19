@@ -3,12 +3,11 @@ library(dplyr)
 vars <- 
   selected_vars %>% 
   filter(grepl("activitylogs", Export, ignore.case = TRUE)) %>% 
-  pull(Variable) %>% 
-  tolower()
+  pull(Variable)
 
 df <- 
   arrow::open_dataset(file.path(downloadLocation, "dataset_fitbitactivitylogs")) %>% 
-  select(matches(vars, ignore.case = TRUE)) %>% 
+  select(all_of(vars)) %>% 
   collect()
 
 colnames(df) <- tolower(colnames(df))

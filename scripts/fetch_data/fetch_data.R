@@ -17,8 +17,7 @@ concept_map <-
   filter(CONCEPT_CD!="<null>")
 
 selected_vars <- 
-  syn_file_to_df(selectedVarsFileID) %>% 
-  mutate(across(everything(), tolower))
+  syn_file_to_df(selectedVarsFileID)
 
 dataset_name_filter <- selected_vars %>% dplyr::pull(Export) %>% unique()
 
