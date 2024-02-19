@@ -2,6 +2,8 @@ library(synapser)
 library(recoverSummarizeR)
 library(dplyr)
 
+cat("fetching data\n")
+
 config::get(
   file = "config/config.yml", 
   config = "prod"
@@ -50,3 +52,5 @@ concept_replacements_reversed <- vec_reverse(concept_replacements)
 if (!dir.exists(outputConceptsDir)) {
   dir.create(outputConceptsDir)
 }
+
+cat("fetch_data completed\n")
