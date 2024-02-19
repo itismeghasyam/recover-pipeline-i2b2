@@ -4,7 +4,8 @@ default:
 prod:
   ontologyFileID: syn52050046
   parquetDirID: syn53138638
-  dataset_name_filter: !expr c("fitbit","healthkit")
+  # dataset_name_filter: !expr c("fitbit","healthkit")
+  deleteExistingDir: FALSE
   concept_replacements: !expr c("mins" = "minutes",
                                 "avghr" = "averageheartrate",
                                 "spo2" = "spo2_",
@@ -20,3 +21,4 @@ prod:
   s3basekey: main/archive/2023-12-06/
   downloadLocation: ./temp-parquet
   selectedVarsFileID: syn53503994
+  outputConceptsDir: ./temp-output-concepts
