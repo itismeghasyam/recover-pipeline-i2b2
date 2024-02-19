@@ -43,6 +43,7 @@ if (deleteExistingDir==TRUE) {
 inclusions <- paste0("--include \"*",dataset_name_filter,"*\"", collapse = " ")
 sync_cmd <- glue::glue('aws s3 sync {base_s3_uri} {downloadLocation} --exclude "*" {inclusions}')
 system(sync_cmd)
+rm(sync_cmd)
 
 concept_replacements_reversed <- vec_reverse(concept_replacements)
 
