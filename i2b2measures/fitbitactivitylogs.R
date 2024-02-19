@@ -46,8 +46,16 @@ output_concepts <-
   dplyr::mutate(dplyr::across(.cols = dplyr::everything(), .fns = as.character)) %>% 
   replace(is.na(.), "<null>") %>% 
   dplyr::filter(nval_num != "<null>" | tval_char != "<null>")
+cat("recoverSummarizeR::process_df() completed.\n")
 
 output_concepts %>% 
   write.csv(file.path(outputConceptsDir, "fitbitactivitylogs.csv"), row.names = F)
+cat(glue::glue("output_concepts written to {file.path(outputConceptsDir, 'fitbitactivitylogs.csv')}\n"))
 
-rm(list=ls())
+rm(vars, 
+   df, 
+   excluded_concepts, 
+   approved_concepts_summarized, 
+   df_melted_filtered, 
+   df_summarized, 
+   output_concepts)
