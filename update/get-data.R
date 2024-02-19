@@ -1,6 +1,6 @@
 library(synapser)
 library(recoverSummarizeR)
-library(magrittr)
+library(dplyr)
 
 config::get(
   file = "config/config.yml", 
@@ -11,7 +11,10 @@ config::get(
 synLogin()
 
 concept_map <- syn_file_to_df(ontologyFileID, "concept_cd")
-selected_vars <- syn_file_to_df(selectedVarsFileID)
+
+selected_vars <- 
+  syn_file_to_df(selectedVarsFileID) %>% 
+  mutate(across(everything(), tolower))
 
 dataset_name_filter <- selected_vars %>% dplyr::pull(Export) %>% unique()
 
