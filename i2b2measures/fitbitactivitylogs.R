@@ -49,3 +49,5 @@ output_concepts <-
 
 output_concepts %>% 
   write.csv(file.path(outputConceptsDir, "fitbitactivitylogs.csv"), row.names = F)
+
+rm(list=ls())
