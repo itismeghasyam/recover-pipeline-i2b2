@@ -1,12 +1,14 @@
 library(dplyr)
 
+dataset <- "fitbitdailydata"
+
 vars <- 
   selected_vars %>% 
-  filter(grepl("dailydata", Export, ignore.case = TRUE)) %>% 
+  filter(grepl(dataset, Export, ignore.case = TRUE)) %>% 
   pull(Variable)
 
 df <- 
-  arrow::open_dataset(file.path(downloadLocation, "dataset_fitbitdailydata")) %>% 
+  arrow::open_dataset(file.path(downloadLocation, glue::glue("dataset_{dataset}"))) %>% 
   select(all_of(vars)) %>% 
   collect()
 
@@ -16,7 +18,7 @@ excluded_concepts <- c("participantidentifier", "date")
 
 approved_concepts_summarized <- 
   setdiff(
-    tolower(selected_vars$Variable[selected_vars$Export=="fitbitdailydata"]),
+    tolower(selected_vars$Variable[selected_vars$Export==dataset]),
     excluded_concepts
   )
 
@@ -50,10 +52,11 @@ output_concepts <-
 cat("recoverSummarizeR::process_df() completed.\n")
 
 output_concepts %>% 
-  write.csv(file.path(outputConceptsDir, "fitbitdailydata.csv"), row.names = F)
-cat(glue::glue("output_concepts written to {file.path(outputConceptsDir, 'fitbitdailydata.csv')}\n"))
+  write.csv(file.path(outputConceptsDir, glue::glue("{dataset}.csv")), row.names = F)
+cat(glue::glue("output_concepts written to {file.path(outputConceptsDir, '{dataset}.csv')}\n"))
 
-rm(vars, 
+rm(dataset,
+   vars, 
    df, 
    excluded_concepts, 
    approved_concepts_summarized, 

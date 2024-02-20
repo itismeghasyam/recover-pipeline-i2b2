@@ -1,12 +1,14 @@
 library(dplyr)
 
+dataset <- "fitbitdevices"
+
 vars <- 
   selected_vars %>% 
-  filter(grepl("fitbitdevices", Export, ignore.case = TRUE)) %>% 
+  filter(grepl(dataset, Export, ignore.case = TRUE)) %>% 
   pull(Variable)
 
 df <- 
-  arrow::open_dataset(file.path(downloadLocation, "dataset_fitbitdevices")) %>% 
+  arrow::open_dataset(file.path(downloadLocation, glue::glue("dataset_{dataset}"))) %>% 
   select(all_of(vars)) %>% 
   collect()
 
@@ -18,8 +20,8 @@ participant_devices <-
   mutate(device = "fitbit")
 
 participant_devices %>% 
-  write.csv(file.path(outputConceptsDir, "participant_devices.csv"), row.names = F)
-cat(glue::glue("participant_devices written to {file.path(outputConceptsDir, 'participant_devices.csv')}\n"))
+  write.csv(file.path(outputConceptsDir, "participant_devices_fitbit.csv"), row.names = F)
+cat(glue::glue("participant_devices_fitbit written to {file.path(outputConceptsDir, 'participant_devices_fitbit.csv')}\n"))
 
 rm(vars,
    df,
