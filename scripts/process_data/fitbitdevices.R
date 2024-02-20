@@ -20,3 +20,7 @@ participant_devices <-
 participant_devices %>% 
   write.csv(file.path(outputConceptsDir, "participant_devices.csv"), row.names = F)
 cat(glue::glue("participant_devices written to {file.path(outputConceptsDir, 'participant_devices.csv')}\n"))
+
+rm(vars,
+   df,
+   participant_devices)
