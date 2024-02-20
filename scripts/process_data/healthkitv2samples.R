@@ -62,7 +62,7 @@ cat("recoverSummarizeR::process_df() completed.\n")
 
 output_concepts %>% 
   write.csv(file.path(outputConceptsDir, glue::glue("{dataset}.csv")), row.names = F)
-cat(glue::glue("output_concepts written to {file.path(outputConceptsDir, '{dataset}.csv')}\n"))
+cat(glue::glue("output_concepts written to {file.path(outputConceptsDir, paste0(dataset, '.csv'))}"),"\n")
 
 rm(dataset,
    vars, 
