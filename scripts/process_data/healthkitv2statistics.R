@@ -10,10 +10,7 @@ vars <-
 df <- 
   arrow::open_dataset(file.path(downloadLocation, glue::glue("dataset_{dataset}"))) %>% 
   select(all_of(vars)) %>% 
-  dplyr::filter(
-    Type=="DailySteps" | 
-      Type=="HourlyDistanceWalkingRunning"
-  ) %>% 
+  dplyr::filter(Type=="DailySteps") %>% 
   rename(concept = Type) %>% 
   collect()
 
@@ -29,41 +26,15 @@ df_melted_filtered <-
   mutate(value = as.numeric(value))
 cat("Melt and filtering step completed.\n")
 
-tmp_df_distance <- 
-  df_melted_filtered %>% 
-  filter(concept=="HourlyDistanceWalkingRunning") %>% 
-  mutate(startdate = as.Date(startdate)) %>% 
-  group_by(participantidentifier, startdate) %>% 
-  summarise(value = sum(value), .groups = "keep") %>% 
-  ungroup() %>% 
-  mutate(concept = "dailydistance",
-         date = startdate+1)
-
-updated_df <- 
-  bind_rows(tmp_df_distance,
-          (df_melted_filtered %>% 
-             filter(concept=="DailySteps") %>% 
-             mutate(startdate = as.Date(startdate),
-                    date = as.Date(date))
-           )
-  ) %>% 
-  select(if("participantidentifier" %in% colnames(.)) "participantidentifier",
-         dplyr::matches("(?<!_)date(?!_)", perl = T),
-         if("concept" %in% colnames(.)) "concept",
-         if("value" %in% colnames(.)) "value")
-
 df_summarized <- 
-  updated_df %>% 
-  # rename(startdate = dplyr::any_of(c("date", "datetime"))) %>% 
-  # mutate(enddate = if (!("enddate" %in% names(.))) NA else enddate) %>% 
+  df_melted_filtered %>% 
   rename(enddate = "date") %>% 
   select(all_of(c("participantidentifier", "startdate", "enddate", "concept", "value"))) %>% 
   recoverSummarizeR::stat_summarize() %>% 
   distinct()
 cat("recoverSummarizeR::stat_summarize() completed.\n")
 
-tmp_concept_replacements <- c("dailysteps" = "steps",
-                              "dailydistance" = "distance")
+tmp_concept_replacements <- c("dailysteps" = "steps")
 
 output_concepts <- 
   process_df(df_summarized, 
@@ -83,11 +54,9 @@ output_concepts %>%
 cat(glue::glue("output_concepts written to {file.path(outputConceptsDir, paste0(dataset, '.csv'))}"),"\n")
 
 rm(dataset,
-   vars, 
-   df, 
-   df_melted_filtered, 
-   tmp_df_distance,
-   updated_df,
-   df_summarized, 
+   vars,
+   df,
+   df_melted_filtered,
+   df_summarized,
    tmp_concept_replacements,
    output_concepts)
