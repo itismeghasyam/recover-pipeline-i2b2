@@ -86,6 +86,8 @@ rm(dataset,
    vars, 
    df, 
    df_melted_filtered, 
+   tmp_df_distance,
+   updated_df,
    df_summarized, 
    tmp_concept_replacements,
    output_concepts)
