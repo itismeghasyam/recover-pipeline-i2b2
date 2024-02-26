@@ -112,7 +112,6 @@ sleeplogs_stat_summarize <- function(df) {
   return(result)
 }
 
-
 library(dplyr)
 
 dataset <- "fitbitsleeplogs"
@@ -137,8 +136,55 @@ df <-
            ((format(SleepStartTime, format = "%H:%M:%S") %>% lubridate::hms()) / lubridate::hours(24))*24,
          SleepEndTime = 
            ((format(SleepEndTime, format = "%H:%M:%S") %>% lubridate::hms()) / lubridate::hours(24))*24,
-         MidSleep = 24*lubridate::hms(MidSleep)/lubridate::hours(24),
-         NumEpisodes = ifelse(!is.na(LogId), 1, NA))
+         MidSleep = 24*lubridate::hms(MidSleep)/lubridate::hours(24))
+
+numepisodes_df_alltime <- 
+  df %>% 
+  mutate(startdate2 = lubridate::as_date(StartDate),
+         NumEpisodes = ifelse(!is.na(LogId), 1, NA)) %>% 
+  group_by(ParticipantIdentifier, startdate2) %>% 
+  select(ParticipantIdentifier, startdate2, NumEpisodes) %>% 
+  summarise(numeps = sum(NumEpisodes)) %>% 
+  ungroup() %>% 
+  group_by(ParticipantIdentifier) %>% 
+  summarise(startdate = min(startdate2),
+            mean = mean(numeps, na.rm = T), 
+            median = median(numeps, na.rm = T), 
+            variance = var(numeps, na.rm = T), 
+            `5pct` = stats::quantile(as.numeric(numeps), 0.05, na.rm = T), 
+            `95pct` = stats::quantile(as.numeric(numeps), 0.95, na.rm = T), 
+            numrecords = dplyr::n()) %>% 
+  ungroup() %>% 
+  left_join(y = 
+              df %>% 
+              select(ParticipantIdentifier, EndDate) %>% 
+              group_by(ParticipantIdentifier) %>% 
+              summarise(enddate = max(lubridate::as_date(EndDate))) %>% 
+              ungroup(), 
+            by = "ParticipantIdentifier") %>% 
+  select(ParticipantIdentifier, startdate, enddate, tidyselect::everything())
+
+numepisodes_df_weekly <- 
+  df %>% 
+  mutate(startdate2 = lubridate::as_date(StartDate),
+         startdate3 = lubridate::floor_date(startdate2, unit = "week", week_start = 7),
+         enddate2 = lubridate::as_date(EndDate),
+         enddate3 = startdate3 + lubridate::days(6),
+         NumEpisodes = ifelse(!is.na(LogId), 1, NA)) %>% 
+  # group_by(ParticipantIdentifier, startdate3, enddate3) %>% 
+  select(ParticipantIdentifier, startdate3, enddate3, NumEpisodes) %>% 
+  # summarise(numeps = sum(NumEpisodes)) %>% 
+  # ungroup() %>% 
+  group_by(ParticipantIdentifier, startdate3, enddate3) %>% 
+  summarise(mean = mean(NumEpisodes, na.rm = T), 
+            median = median(NumEpisodes, na.rm = T), 
+            variance = var(NumEpisodes, na.rm = T), 
+            `5pct` = stats::quantile(as.numeric(NumEpisodes), 0.05, na.rm = T), 
+            `95pct` = stats::quantile(as.numeric(NumEpisodes), 0.95, na.rm = T), 
+            numrecords = dplyr::n()) %>% 
+  ungroup() %>% 
+  rename(startdate = startdate3, enddate = enddate3) %>% 
+  select(ParticipantIdentifier, startdate, enddate, tidyselect::everything())
 
 sleeplogsdetails_vars <- 
   selected_vars %>% 
@@ -164,6 +210,10 @@ df_joined <- left_join(x = df, y = numawakenings_logid_filtered, by = "LogId")
 
 colnames(df_joined) <- tolower(colnames(df_joined))
 
+colnames(numepisodes_df_alltime) <- tolower(colnames(numepisodes_df_alltime))
+
+colnames(numepisodes_df_weekly) <- tolower(colnames(numepisodes_df_weekly))
+
 excluded_concepts <- c("participantidentifier", 
                        "startdate", 
                        "enddate", 
@@ -186,6 +236,31 @@ df_melted_filtered <-
          if("value" %in% colnames(.)) "value") %>% 
   tidyr::drop_na("value") %>% 
   mutate(value = as.numeric(value))
+
+numepisodes_df_melted_filtered_alltime <- 
+  numepisodes_df_alltime %>% 
+  tidyr::pivot_longer(cols = !c(participantidentifier, startdate, enddate), 
+                      names_to = "stat",
+                      values_to = "value") %>% 
+  select(if("participantidentifier" %in% colnames(.)) "participantidentifier",
+         dplyr::matches("(?<!_)date(?!_)", perl = T),
+         if("stat" %in% colnames(.)) "stat",
+         if("value" %in% colnames(.)) "value") %>% 
+  tidyr::drop_na("value") %>%
+  mutate(value = as.numeric(value))
+
+numepisodes_df_melted_filtered_weekly <- 
+  numepisodes_df_weekly %>% 
+  tidyr::pivot_longer(cols = !c(participantidentifier, startdate, enddate), 
+                      names_to = "stat",
+                      values_to = "value") %>% 
+  select(if("participantidentifier" %in% colnames(.)) "participantidentifier",
+         dplyr::matches("(?<!_)date(?!_)", perl = T),
+         if("stat" %in% colnames(.)) "stat",
+         if("value" %in% colnames(.)) "value") %>% 
+  tidyr::drop_na("value") %>%
+  mutate(value = as.numeric(value))
+
 cat("recoverSummarizeR::melt_df() completed.\n")
 
 df_summarized <- 
@@ -196,10 +271,32 @@ df_summarized <-
   # recoverSummarizeR::stat_summarize() %>% 
   sleeplogs_stat_summarize() %>% 
   distinct()
+
+numepisodes_df_summarized_alltime <- 
+  numepisodes_df_melted_filtered_alltime %>% 
+  select(participantidentifier, startdate, enddate, stat, value) %>% 
+  mutate(concept = paste0("mhp:summary:alltime:", stat, ":numepisodes")) %>%
+  select(participantidentifier, startdate, enddate, concept, value) %>%
+  distinct()
+
+numepisodes_df_summarized_weekly <- 
+  numepisodes_df_melted_filtered_weekly %>% 
+  select(participantidentifier, startdate, enddate, stat, value) %>% 
+  filter(startdate >= lubridate::floor_date(min(startdate), unit = "week", week_start = 7)) %>% 
+  mutate(concept = paste0("mhp:summary:weekly:", stat, ":numepisodes")) %>% 
+  select(participantidentifier, startdate, enddate, concept, value) %>% 
+  distinct()
+
+final_df_summarized <- 
+  dplyr::bind_rows(df_summarized, 
+                   numepisodes_df_summarized_alltime, 
+                   numepisodes_df_summarized_weekly) %>% 
+  dplyr::distinct()
+
 cat("sleeplogs_stat_summarize() completed.\n")
 
 output_concepts <- 
-  process_df(df_summarized, concept_map, concept_replacements_reversed, concept_map_concepts = "CONCEPT_CD", concept_map_units = "UNITS_CD") %>% 
+  process_df(final_df_summarized, concept_map, concept_replacements_reversed, concept_map_concepts = "CONCEPT_CD", concept_map_units = "UNITS_CD") %>% 
   dplyr::mutate(nval_num = signif(nval_num, 9)) %>% 
   dplyr::arrange(concept) %>% 
   dplyr::mutate(dplyr::across(.cols = dplyr::everything(), .fns = as.character)) %>% 
@@ -211,9 +308,12 @@ output_concepts %>%
   write.csv(file.path(outputConceptsDir, glue::glue("{dataset}.csv")), row.names = F)
 cat(glue::glue("output_concepts written to {file.path(outputConceptsDir, paste0(dataset, '.csv'))}"),"\n")
 
-rm(dataset,
+rm(sleeplogs_stat_summarize,
+   dataset,
    vars, 
    df, 
+   numepisodes_df_alltime,
+   numepisodes_df_weekly,
    sleeplogsdetails_vars,
    sleeplogsdetails_df,
    numawakenings_logid_filtered,
@@ -221,5 +321,10 @@ rm(dataset,
    excluded_concepts, 
    approved_concepts_summarized, 
    df_melted_filtered, 
+   numepisodes_df_melted_filtered_alltime,
+   numepisodes_df_melted_filtered_weekly,
    df_summarized, 
+   numepisodes_df_summarized_alltime,
+   numepisodes_df_summarized_weekly,
+   final_df_summarized,
    output_concepts)
