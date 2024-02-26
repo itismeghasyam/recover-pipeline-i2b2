@@ -10,13 +10,18 @@ vars <-
 df <- 
   arrow::open_dataset(file.path(downloadLocation, glue::glue("dataset_{dataset}"))) %>% 
   select(all_of(vars)) %>% 
-  select(-(any_of(c("Device_Model", "Device_Manufacturer")))) %>% 
   dplyr::filter(
     Type=="RespiratoryRate" | 
       Type=="HeartRate" | 
       Type=="HeartRateVariability" | 
       Type=="OxygenSaturation"
     ) %>% 
+  dplyr::filter(
+    (Device_Manufacturer %in% 
+       c("Apple", "Apple Inc.", "Garmin", "Polar Electro Oy") & 
+       !Device_Model %in% c("iPhone", "iPod")
+     ) | Device_Model=="HRM808S") %>% 
+  # select(-(any_of(c("Device_Model", "Device_Manufacturer")))) %>%
   rename(concept = Type) %>% 
   collect()
 
@@ -34,8 +39,6 @@ cat("Melt and filtering step completed.\n")
 
 df_summarized <- 
   df_melted_filtered %>% 
-  # rename(startdate = dplyr::any_of(c("date", "datetime"))) %>% 
-  # mutate(enddate = if (!("enddate" %in% names(.))) NA else enddate) %>% 
   rename(enddate = "date") %>% 
   select(all_of(c("participantidentifier", "startdate", "enddate", "concept", "value"))) %>% 
   recoverSummarizeR::stat_summarize() %>% 
