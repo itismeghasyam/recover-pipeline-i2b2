@@ -15,7 +15,7 @@ prod:
                                 "sleepstarttime" = "startdate",
                                 "sleependtime" = "enddate")
   concept_filter_col: CONCEPT_CD
-  # synFolderID: syn18273645
+  synFolderID: syn52504335
   method: sts
   s3bucket: recover-main-project
   s3basekey: main/archive/2023-12-06/
