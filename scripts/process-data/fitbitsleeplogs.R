@@ -227,8 +227,31 @@ approved_concepts_summarized <-
     excluded_concepts
   )
 
+df_joined[approved_concepts_summarized] <- lapply(df_joined[approved_concepts_summarized], as.numeric)
+
+bounds <- 
+  selected_vars %>% 
+  filter(grepl(dataset, Export, ignore.case = TRUE),
+         tolower(Variable) %in% approved_concepts_summarized) %>% 
+  select(Variable, Lower_Bound, Upper_Bound) %>% 
+  mutate(Variable = tolower(Variable)) %>% 
+  filter(!is.na(Lower_Bound) & !is.na(Upper_Bound))
+
+df_filtered <- df_joined
+for (col_name in names(df_filtered)) {
+  if (col_name %in% bounds$Variable) {
+    lower_bound <- bounds$Lower_Bound[bounds$Variable == col_name]
+    upper_bound <- bounds$Upper_Bound[bounds$Variable == col_name]
+    
+    df_filtered[[col_name]] <- ifelse(df_filtered[[col_name]] < lower_bound |
+                                        df_filtered[[col_name]] > upper_bound,
+                                      NA,
+                                      df_filtered[[col_name]])
+  }
+}
+
 df_melted_filtered <- 
-  df_joined %>% 
+  df_filtered %>% 
   recoverSummarizeR::melt_df(excluded_concepts = excluded_concepts) %>% 
   select(if("participantidentifier" %in% colnames(.)) "participantidentifier",
          dplyr::matches("(?<!_)date(?!_)", perl = T),
@@ -320,6 +343,11 @@ rm(sleeplogs_stat_summarize,
    df_joined,
    excluded_concepts, 
    approved_concepts_summarized, 
+   bounds,
+   df_filtered,
+   col_name,
+   lower_bound,
+   upper_bound,
    df_melted_filtered, 
    numepisodes_df_melted_filtered_alltime,
    numepisodes_df_melted_filtered_weekly,

@@ -22,8 +22,30 @@ approved_concepts_summarized <-
     excluded_concepts
   )
 
+df[approved_concepts_summarized] <- lapply(df[approved_concepts_summarized], as.numeric)
+
+bounds <- 
+  selected_vars %>% 
+  filter(grepl(dataset, Export, ignore.case = TRUE),
+         tolower(Variable) %in% approved_concepts_summarized) %>% 
+  select(Variable, Lower_Bound, Upper_Bound) %>% 
+  mutate(Variable = tolower(Variable))
+
+df_filtered <- df
+for (col_name in names(df_filtered)) {
+  if (col_name %in% bounds$Variable) {
+    lower_bound <- bounds$Lower_Bound[bounds$Variable == col_name]
+    upper_bound <- bounds$Upper_Bound[bounds$Variable == col_name]
+    
+    df_filtered[[col_name]] <- ifelse(df_filtered[[col_name]] < lower_bound |
+                                        df_filtered[[col_name]] > upper_bound,
+                                      NA,
+                                      df_filtered[[col_name]])
+  }
+}
+
 df_melted_filtered <- 
-  df %>% 
+  df_filtered %>% 
   recoverSummarizeR::melt_df(excluded_concepts = excluded_concepts) %>% 
   select(if("participantidentifier" %in% colnames(.)) "participantidentifier",
          dplyr::matches("(?<!_)date(?!_)", perl = T),
@@ -58,6 +80,11 @@ rm(dataset,
    df, 
    excluded_concepts, 
    approved_concepts_summarized, 
+   bounds,
+   df_filtered,
+   col_name,
+   lower_bound,
+   upper_bound,
    df_melted_filtered, 
    df_summarized, 
    output_concepts)

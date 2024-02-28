@@ -12,12 +12,24 @@ df <-
   select(all_of(vars)) %>% 
   dplyr::filter(Type=="DailySteps") %>% 
   rename(concept = Type) %>% 
+  mutate(Value = as.numeric(Value)) %>% 
   collect()
 
 colnames(df) <- tolower(colnames(df))
 
+criteria <- selected_vars$Variable=="Steps" & selected_vars$Export=="fitbitdailydata"
+
+bounds <- data.frame(Lower_Bound = selected_vars$Lower_Bound[criteria], 
+                     Upper_Bound = selected_vars$Upper_Bound[criteria])
+
+df_filtered <- df
+df_filtered$value <- ifelse(df_filtered$value < bounds$Lower_Bound | 
+                              df_filtered$value > bounds$Upper_Bound,
+                            NA,
+                            df_filtered$value)
+
 df_melted_filtered <- 
-  df %>% 
+  df_filtered %>% 
   select(if("participantidentifier" %in% colnames(.)) "participantidentifier",
          dplyr::matches("(?<!_)date(?!_)", perl = T),
          if("concept" %in% colnames(.)) "concept",
@@ -56,6 +68,9 @@ cat(glue::glue("output_concepts written to {file.path(outputConceptsDir, paste0(
 rm(dataset,
    vars,
    df,
+   criteria,
+   bounds,
+   df_filtered,
    df_melted_filtered,
    df_summarized,
    tmp_concept_replacements,

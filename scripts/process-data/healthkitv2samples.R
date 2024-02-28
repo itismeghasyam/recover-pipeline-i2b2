@@ -21,14 +21,38 @@ df <-
        c("Apple", "Apple Inc.", "Garmin", "Polar Electro Oy") & 
        !Device_Model %in% c("iPhone", "iPod")
      ) | Device_Model=="HRM808S") %>% 
-  # select(-(any_of(c("Device_Model", "Device_Manufacturer")))) %>%
+  select(-(any_of(c("Device_Model", "Device_Manufacturer")))) %>%
   rename(concept = Type) %>% 
+  mutate(Value = as.numeric(Value)) %>% 
   collect()
 
 colnames(df) <- tolower(colnames(df))
 
+criteria <- list(selected_vars$Variable=="AverageHeartRate" & selected_vars$Export=="fitbitactivitylogs",
+             selected_vars$Variable=="BreathingRate" & selected_vars$Export=="fitbitdailydata",
+             selected_vars$Variable=="SpO2_Avg" & selected_vars$Export=="fitbitdailydata")
+
+bounds <- data.frame(Variable = c("HeartRate", "RespiratoryRate", "OxygenSaturation"),
+                     Lower_Bound = sapply(criteria, function(x) selected_vars$Lower_Bound[x]), 
+                     Upper_Bound = sapply(criteria, function(x) selected_vars$Upper_Bound[x]))
+
+bounds$Lower_Bound[bounds$Variable=="OxygenSaturation"] <- bounds$Lower_Bound[bounds$Variable=="OxygenSaturation"]/100
+bounds$Upper_Bound[bounds$Variable=="OxygenSaturation"] <- bounds$Upper_Bound[bounds$Variable=="OxygenSaturation"]/100
+
+df_filtered <- df
+for (i in 1:nrow(bounds)) {
+  var <- bounds$Variable[i]
+  lower <- bounds$Lower_Bound[i]
+  upper <- bounds$Upper_Bound[i]
+  
+  df_filtered$value[df_filtered$concept==var] <- 
+    ifelse(df_filtered$value[df_filtered$concept==var] < lower | df_filtered$value[df_filtered$concept==var] > upper,
+           NA,
+           df_filtered$value[df_filtered$concept==var])
+}
+
 df_melted_filtered <- 
-  df %>% 
+  df_filtered %>% 
   select(if("participantidentifier" %in% colnames(.)) "participantidentifier",
          dplyr::matches("(?<!_)date(?!_)", perl = T),
          if("concept" %in% colnames(.)) "concept",
