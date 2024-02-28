@@ -54,4 +54,4 @@ if (!dir.exists(outputConceptsDir)) {
   dir.create(outputConceptsDir)
 }
 
-cat("Finished fetching data\n")
+cat("Finished fetching data\n\n")

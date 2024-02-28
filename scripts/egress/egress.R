@@ -34,4 +34,4 @@ rm(latest_commit,
    file_name
  )
 
-cat("Finished egress\n")
+cat("Finished egress\n\n")

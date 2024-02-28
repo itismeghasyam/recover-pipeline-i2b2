@@ -49,4 +49,4 @@ rm(datasets,
    combined_output_concepts
 )
 
-cat("Finished creating final output concepts\n")
+cat("Finished creating final output concepts\n\n")
