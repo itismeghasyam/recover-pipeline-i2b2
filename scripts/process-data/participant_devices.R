@@ -2,6 +2,8 @@ library(dplyr)
 
 dataset <- c("fitbitdevices", "healthkitv2samples")
 
+cat(glue::glue("Transforming device data for {dataset}"),"\n")
+
 vars <- list(fitbitdevices = c("ParticipantIdentifier", "Device", "Date"), 
              healthkitv2samples = c("ParticipantIdentifier", "Device_Model", "Device_Manufacturer", "StartDate", "Date"))
 
@@ -59,6 +61,8 @@ cat("recoverSummarizeR::process_df() completed.\n")
 output_concepts %>% 
   write.csv(file.path(outputConceptsDir, "participant_devices.csv"), row.names = F)
 cat(glue::glue("participant_devices written to {file.path(outputConceptsDir, 'participant_devices.csv')}"), "\n")
+
+cat(glue::glue("Finished tansforming device data for {dataset}"),"\n")
 
 rm(dataset,
    vars,

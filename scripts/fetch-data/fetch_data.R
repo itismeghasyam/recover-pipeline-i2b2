@@ -2,7 +2,7 @@ library(synapser)
 library(recoverSummarizeR)
 library(dplyr)
 
-cat("fetching data\n")
+cat("Fetching data\n")
 
 config::get(
   file = "config/config.yml", 
@@ -54,4 +54,4 @@ if (!dir.exists(outputConceptsDir)) {
   dir.create(outputConceptsDir)
 }
 
-cat("fetch_data completed\n")
+cat("Finished fetching data\n")

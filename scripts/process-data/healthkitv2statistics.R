@@ -2,6 +2,8 @@ library(dplyr)
 
 dataset <- "healthkitv2statistics"
 
+cat(glue::glue("Transforming data for {dataset}"),"\n")
+
 vars <- 
   selected_vars %>% 
   filter(grepl(dataset, Export, ignore.case = TRUE)) %>% 
@@ -64,6 +66,8 @@ cat("recoverSummarizeR::process_df() completed.\n")
 output_concepts %>% 
   write.csv(file.path(outputConceptsDir, glue::glue("{dataset}.csv")), row.names = F)
 cat(glue::glue("output_concepts written to {file.path(outputConceptsDir, paste0(dataset, '.csv'))}"),"\n")
+
+cat(glue::glue("Finished transforming data for {dataset}"),"\n")
 
 rm(dataset,
    vars,

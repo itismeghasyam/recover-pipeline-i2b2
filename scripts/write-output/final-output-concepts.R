@@ -1,3 +1,5 @@
+cat("Creating final output concepts\n")
+
 datasets <- selected_vars$Export %>% unique()
 datasets[datasets %in% c("fitbitdevices")] <- "participant_devices"
 
@@ -46,3 +48,5 @@ rm(datasets,
    combined_device,
    combined_output_concepts
 )
+
+cat("Finished creating final output concepts\n")

@@ -33,3 +33,5 @@ rm(latest_commit,
    latest_commit_tree_url,
    file_name
  )
+
+cat("Finished egress\n")
