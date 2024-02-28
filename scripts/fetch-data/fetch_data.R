@@ -17,7 +17,9 @@ concept_map <-
   filter(CONCEPT_CD!="<null>")
 
 selected_vars <- 
-  syn_file_to_df(selectedVarsFileID)
+  syn_file_to_df(selectedVarsFileID) %>% 
+  mutate(Lower_Bound = suppressWarnings(as.numeric(Lower_Bound)),
+         Upper_Bound = suppressWarnings(as.numeric(Upper_Bound)))
 
 dataset_name_filter <- selected_vars %>% dplyr::pull(Export) %>% unique()
 
