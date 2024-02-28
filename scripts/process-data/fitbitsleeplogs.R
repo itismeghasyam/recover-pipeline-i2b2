@@ -1,4 +1,19 @@
 # Functions
+
+#' Create i2b2 summaries
+#'
+#' `sleeplogs_stat_summarize()` summarizes the sleep data in a data frame on 
+#' specific time scales (all data and weekly) for the following statistics: 
+#' 5th/95th percentiles, mean, median, variance, and number of records.
+#'
+#' @param df A data frame with `participantidentifier`, `concept`, `value`, and 
+#' some combination of `startdate`, `enddate`, `date`, or `datetime` columns.
+#'
+#' @return A data frame that differs in size from `df`. The original `value` 
+#' column is dropped and replaced by a new `value` column containing the values 
+#' of each summary statistic computed for each group of data (group by 
+#' `participantidentifier` and `concept` for all data, and 
+#' `participantidentifier`, `concept`, `year`, `week` for weekly summaries).
 sleeplogs_stat_summarize <- function(df) {
   cat("Running sleeplogs_stat_summarize()...\n")
   
@@ -117,11 +132,13 @@ dataset <- "fitbitsleeplogs"
 
 cat(glue::glue("Transforming data for {dataset}"),"\n")
 
+# Get variables for this dataset
 vars <- 
   selected_vars %>% 
   filter(grepl(paste0(dataset, "$"), Export, ignore.case = TRUE, perl = TRUE)) %>% 
   pull(Variable)
 
+# Load the desired subset of this dataset in memory and do some feature engineering for derived variables
 df <- 
   arrow::open_dataset(file.path(downloadLocation, glue::glue("dataset_{dataset}"))) %>% 
   select(all_of(c(vars, "LogId"))) %>% 
@@ -139,6 +156,7 @@ df <-
            ((format(SleepEndTime, format = "%H:%M:%S") %>% lubridate::hms()) / lubridate::hours(24))*24,
          MidSleep = 24*lubridate::hms(MidSleep)/lubridate::hours(24))
 
+# Do some feature engineering to create the NumEpisodes derived variable and alltime/weekly summary statistics
 numepisodes_df_alltime <- 
   df %>% 
   mutate(startdate2 = lubridate::as_date(StartDate),
@@ -172,10 +190,7 @@ numepisodes_df_weekly <-
          enddate2 = lubridate::as_date(EndDate),
          enddate3 = startdate3 + lubridate::days(6),
          NumEpisodes = ifelse(!is.na(LogId), 1, NA)) %>% 
-  # group_by(ParticipantIdentifier, startdate3, enddate3) %>% 
   select(ParticipantIdentifier, startdate3, enddate3, NumEpisodes) %>% 
-  # summarise(numeps = sum(NumEpisodes)) %>% 
-  # ungroup() %>% 
   group_by(ParticipantIdentifier, startdate3, enddate3) %>% 
   summarise(mean = mean(NumEpisodes, na.rm = T), 
             median = median(NumEpisodes, na.rm = T), 
@@ -187,6 +202,7 @@ numepisodes_df_weekly <-
   rename(startdate = startdate3, enddate = enddate3) %>% 
   select(ParticipantIdentifier, startdate, enddate, tidyselect::everything())
 
+# Use the sleeplogs_sleeplogdetails dataset to create the NumAwakenings derived variable
 sleeplogsdetails_vars <- 
   selected_vars %>% 
   filter(grepl("sleeplogdetails", Export, ignore.case = TRUE)) %>% 
@@ -207,6 +223,7 @@ numawakenings_logid_filtered <-
                                      !(row_number() == n() & Value %in% c("wake", "awake")))) %>% 
   ungroup()
 
+# Merge the original df with the numawakenings df to create a united df
 df_joined <- left_join(x = df, y = numawakenings_logid_filtered, by = "LogId")
 
 colnames(df_joined) <- tolower(colnames(df_joined))
@@ -215,6 +232,7 @@ colnames(numepisodes_df_alltime) <- tolower(colnames(numepisodes_df_alltime))
 
 colnames(numepisodes_df_weekly) <- tolower(colnames(numepisodes_df_weekly))
 
+# Create lists for ID variables and i2b2 concept variables
 excluded_concepts <- c("participantidentifier", 
                        "startdate", 
                        "enddate", 
@@ -230,6 +248,7 @@ approved_concepts_summarized <-
 
 df_joined[approved_concepts_summarized] <- lapply(df_joined[approved_concepts_summarized], as.numeric)
 
+# Get QA/QC ranges for variables and exclude values outside the ranges
 bounds <- 
   selected_vars %>% 
   filter(grepl(dataset, Export, ignore.case = TRUE),
@@ -251,6 +270,7 @@ for (col_name in names(df_filtered)) {
   }
 }
 
+# Pivot data frames from long to wide
 df_melted_filtered <- 
   df_filtered %>% 
   recoverSummarizeR::melt_df(excluded_concepts = excluded_concepts) %>% 
@@ -287,12 +307,10 @@ numepisodes_df_melted_filtered_weekly <-
 
 cat("recoverSummarizeR::melt_df() completed.\n")
 
+# Generate i2b2 summaries
 df_summarized <- 
   df_melted_filtered %>% 
-  # rename(startdate = dplyr::any_of(c("date", "datetime"))) %>% 
-  # mutate(enddate = if (!("enddate" %in% names(.))) NA else enddate) %>% 
   select(all_of(c("participantidentifier", "startdate", "enddate", "concept", "value"))) %>% 
-  # recoverSummarizeR::stat_summarize() %>% 
   sleeplogs_stat_summarize() %>% 
   distinct()
 
@@ -311,6 +329,7 @@ numepisodes_df_summarized_weekly <-
   select(participantidentifier, startdate, enddate, concept, value) %>% 
   distinct()
 
+# Unite all i2b2 summaries data frames
 final_df_summarized <- 
   dplyr::bind_rows(df_summarized, 
                    numepisodes_df_summarized_alltime, 
@@ -319,6 +338,7 @@ final_df_summarized <-
 
 cat("sleeplogs_stat_summarize() completed.\n")
 
+# Add i2b2 columns from concept map (ontology file) and clean the output
 output_concepts <- 
   process_df(final_df_summarized, concept_map, concept_replacements_reversed, concept_map_concepts = "CONCEPT_CD", concept_map_units = "UNITS_CD") %>% 
   dplyr::mutate(nval_num = signif(nval_num, 9)) %>% 
@@ -328,12 +348,14 @@ output_concepts <-
   dplyr::filter(nval_num != "<null>" | tval_char != "<null>")
 cat("recoverSummarizeR::process_df() completed.\n")
 
+# Write the output
 output_concepts %>% 
   write.csv(file.path(outputConceptsDir, glue::glue("{dataset}.csv")), row.names = F)
 cat(glue::glue("output_concepts written to {file.path(outputConceptsDir, paste0(dataset, '.csv'))}"),"\n")
 
 cat(glue::glue("Finished transforming data for {dataset}"),"\n\n")
 
+# Remove objects created here from the global environment
 rm(sleeplogs_stat_summarize,
    dataset,
    vars, 

@@ -4,11 +4,13 @@ dataset <- "healthkitv2samples"
 
 cat(glue::glue("Transforming data for {dataset}"),"\n")
 
+# Get variables for this dataset
 vars <- 
   selected_vars %>% 
   filter(grepl(dataset, Export, ignore.case = TRUE)) %>% 
   pull(Variable)
 
+# Load the desired subset of this dataset in memory
 df <- 
   arrow::open_dataset(file.path(downloadLocation, glue::glue("dataset_{dataset}"))) %>% 
   select(all_of(vars)) %>% 
@@ -30,6 +32,7 @@ df <-
 
 colnames(df) <- tolower(colnames(df))
 
+# Get QA/QC ranges for variables and exclude values outside the ranges
 criteria <- list(selected_vars$Variable=="AverageHeartRate" & selected_vars$Export=="fitbitactivitylogs",
              selected_vars$Variable=="BreathingRate" & selected_vars$Export=="fitbitdailydata",
              selected_vars$Variable=="SpO2_Avg" & selected_vars$Export=="fitbitdailydata")
@@ -53,6 +56,7 @@ for (i in 1:nrow(bounds)) {
            df_filtered$value[df_filtered$concept==var])
 }
 
+# Pivot data frame from long to wide
 df_melted_filtered <- 
   df_filtered %>% 
   select(if("participantidentifier" %in% colnames(.)) "participantidentifier",
@@ -63,6 +67,7 @@ df_melted_filtered <-
   mutate(value = as.numeric(value))
 cat("Melt and filtering step completed.\n")
 
+# Generate i2b2 summaries
 df_summarized <- 
   df_melted_filtered %>% 
   rename(enddate = "date") %>% 
@@ -76,6 +81,7 @@ tmp_concept_replacements <- c("respiratoryrate" = "breathingrate",
                               "heartrate" = "avghr",
                               "oxygensaturation" = "spo2avg")
 
+# Add i2b2 columns from concept map (ontology file) and clean the output
 output_concepts <- 
   process_df(df_summarized, 
              concept_map, 
@@ -89,12 +95,14 @@ output_concepts <-
   dplyr::filter(nval_num != "<null>" | tval_char != "<null>")
 cat("recoverSummarizeR::process_df() completed.\n")
 
+# Write the output
 output_concepts %>% 
   write.csv(file.path(outputConceptsDir, glue::glue("{dataset}.csv")), row.names = F)
 cat(glue::glue("output_concepts written to {file.path(outputConceptsDir, paste0(dataset, '.csv'))}"),"\n")
 
 cat(glue::glue("Finished transforming data for {dataset}"),"\n\n")
 
+# Remove objects created here from the global environment
 rm(dataset,
    vars, 
    df, 

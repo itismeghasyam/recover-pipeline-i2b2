@@ -4,6 +4,7 @@ library(dplyr)
 
 cat("Fetching data\n")
 
+# Get config variables
 config::get(
   file = "config/config.yml", 
   config = "prod"
@@ -12,6 +13,7 @@ config::get(
 
 synLogin()
 
+# Get input files from synapse
 concept_map <- 
   syn_file_to_df(ontologyFileID, "CONCEPT_CD") %>% 
   filter(CONCEPT_CD!="<null>")
@@ -21,7 +23,11 @@ selected_vars <-
   mutate(Lower_Bound = suppressWarnings(as.numeric(Lower_Bound)),
          Upper_Bound = suppressWarnings(as.numeric(Upper_Bound)))
 
-dataset_name_filter <- selected_vars %>% dplyr::pull(Export) %>% unique()
+# Get list of which datasets to use
+dataset_name_filter <- 
+  selected_vars %>% 
+  dplyr::pull(Export) %>% 
+  unique()
 
 # Sync S3 bucket to local
 token <- synapser::synGetStsStorageToken(
@@ -43,11 +49,13 @@ if (deleteExistingDir==TRUE) {
   unlink(downloadLocation, recursive = T, force = T)
 }
 
+# Only sync the bucket folders containing the datasets we need
 inclusions <- paste0("--include \"*",dataset_name_filter,"*\"", collapse = " ")
 sync_cmd <- glue::glue('aws s3 sync {base_s3_uri} {downloadLocation} --exclude "*" {inclusions}')
 system(sync_cmd)
 rm(sync_cmd)
 
+# For use in process-data steps
 concept_replacements_reversed <- vec_reverse(concept_replacements)
 
 if (!dir.exists(outputConceptsDir)) {

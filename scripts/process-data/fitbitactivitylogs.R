@@ -4,11 +4,13 @@ dataset <- "fitbitactivitylogs"
 
 cat(glue::glue("Transforming data for {dataset}"),"\n")
 
+# Get variables for this dataset
 vars <- 
   selected_vars %>% 
   filter(grepl(dataset, Export, ignore.case = TRUE)) %>% 
   pull(Variable)
 
+# Load the desired subset of this dataset in memory
 df <- 
   arrow::open_dataset(file.path(downloadLocation, glue::glue("dataset_{dataset}"))) %>% 
   select(all_of(vars)) %>% 
@@ -16,6 +18,7 @@ df <-
 
 colnames(df) <- tolower(colnames(df))
 
+# Create lists for ID variables and i2b2 concept variables
 excluded_concepts <- c("participantidentifier", "startdate", "enddate")
 
 approved_concepts_summarized <- 
@@ -26,6 +29,7 @@ approved_concepts_summarized <-
 
 df[approved_concepts_summarized] <- lapply(df[approved_concepts_summarized], as.numeric)
 
+# Get QA/QC ranges for variables and exclude values outside the ranges
 bounds <- 
   selected_vars %>% 
   filter(grepl(dataset, Export, ignore.case = TRUE),
@@ -46,6 +50,7 @@ for (col_name in names(df_filtered)) {
   }
 }
 
+# Pivot data frame from long to wide
 df_melted_filtered <- 
   df_filtered %>% 
   recoverSummarizeR::melt_df(excluded_concepts = excluded_concepts) %>% 
@@ -57,6 +62,7 @@ df_melted_filtered <-
   mutate(value = as.numeric(value))
 cat("recoverSummarizeR::melt_df() completed.\n")
 
+# Generate i2b2 summaries
 df_summarized <- 
   df_melted_filtered %>% 
   select(all_of(c("participantidentifier", "startdate", "enddate", "concept", "value"))) %>% 
@@ -64,6 +70,7 @@ df_summarized <-
   distinct()
 cat("recoverSummarizeR::stat_summarize() completed.\n")
 
+# Add i2b2 columns from concept map (ontology file) and clean the output
 output_concepts <- 
   process_df(df_summarized, concept_map, concept_replacements_reversed, concept_map_concepts = "CONCEPT_CD", concept_map_units = "UNITS_CD") %>% 
   dplyr::mutate(nval_num = signif(nval_num, 9)) %>% 
@@ -73,12 +80,14 @@ output_concepts <-
   dplyr::filter(nval_num != "<null>" | tval_char != "<null>")
 cat("recoverSummarizeR::process_df() completed.\n")
 
+# Write the output
 output_concepts %>% 
   write.csv(file.path(outputConceptsDir, glue::glue("{dataset}.csv")), row.names = F)
 cat(glue::glue("output_concepts written to {file.path(outputConceptsDir, paste0(dataset, '.csv'))}"),"\n")
 
 cat(glue::glue("Finished transforming data for {dataset}"),"\n\n")
 
+# Remove objects created here from the global environment
 rm(dataset,
    vars, 
    df, 
