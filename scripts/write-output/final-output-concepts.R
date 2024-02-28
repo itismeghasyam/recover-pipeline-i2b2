@@ -29,6 +29,8 @@ combined_device <- combined_device[!duplicated(combined_device), ]
 combined_output_concepts <- bind_rows(combined_device, 
                                       combined_fitbit, 
                                       combined_healthkit)
+# dupes <- combined_output_concepts[duplicated(combined_output_concepts),]
+combined_output_concepts <- combined_output_concepts[!duplicated(combined_output_concepts), ]
 
 combined_output_concepts %>% 
   write.csv(file.path(outputConceptsDir, "final_output_concepts.csv"), row.names = F)
