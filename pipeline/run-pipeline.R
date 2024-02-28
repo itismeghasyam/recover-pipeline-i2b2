@@ -1,27 +1,17 @@
-require(synapser)
-require(devtools)
-library(recoverSummarizeR)
+# Fetch data
+source("scripts/fetch-data/fetch_data.R")
 
-synapser::synLogin(authToken=Sys.getenv("SYNAPSE_AUTH_TOKEN"))
+# Process data
+source("scripts/process-data/fitbitactivitylogs.R")
+source("scripts/process-data/fitbitdailydata.R")
+source("scripts/process-data/fitbitintradaycombined.R")
+source("scripts/process-data/fitbitsleeplogs.R")
+source("scripts/process-data/healthkitv2samples.R")
+source("scripts/process-data/healthkitv2statistics.R")
+source("scripts/process-data/participant_devices.R")
 
-ontologyFileID <- Sys.getenv("ONTOLOGY_FILE_ID")
-parquetDirID <- Sys.getenv("PARQUET_DIR_ID")
-dataset_name_filter <- Sys.getenv("DATASET_NAME_FILTER")
-concept_replacements <- eval(parse(text=Sys.getenv("CONCEPT_REPLACEMENTS")))
-concept_filter_col <- Sys.getenv("CONCEPT_FILTER_COL")
-synFolderID <- Sys.getenv("SYN_FOLDER_ID")
-method <- Sys.getenv("METHOD")
-s3bucket <- Sys.getenv("S3BUCKET")
-s3basekey <- Sys.getenv("S3BASEKEY")
-downloadLocation <- Sys.getenv("DOWNLOADLOCATION")
+# Create final output concepts
+source("scripts/write-output/final-output-concepts.R")
 
-recoverSummarizeR::summarize_pipeline(ontologyFileID, 
-                                      parquetDirID, 
-                                      dataset_name_filter, 
-                                      concept_replacements, 
-                                      concept_filter_col, 
-                                      synFolderID,
-                                      method,
-                                      s3bucket,
-                                      s3basekey,
-                                      downloadLocation)
+# Egress
+source("scripts/egress/egress.R")
