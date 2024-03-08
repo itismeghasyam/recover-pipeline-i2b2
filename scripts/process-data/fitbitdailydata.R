@@ -13,12 +13,13 @@ vars <-
 # Load the desired subset of this dataset in memory
 df <- 
   arrow::open_dataset(file.path(downloadLocation, glue::glue("dataset_{dataset}"))) %>% 
-  mutate(Tracker_Steps = as.numeric(Tracker_Steps),
+  mutate(Steps = as.numeric(Steps),
          HeartRateIntradayMinuteCount = as.numeric(HeartRateIntradayMinuteCount)) %>% 
-  filter(Tracker_Steps != 0, 
-         HeartRateIntradayMinuteCount != 0 | !is.na(HeartRateIntradayMinuteCount)) %>% 
-  select(all_of(vars)) %>% 
-  collect()
+  select(all_of(c(vars, "HeartRateIntradayMinuteCount"))) %>% 
+  collect() %>% 
+  filter((!(Steps==0 & (HeartRateIntradayMinuteCount==0 | is.na(HeartRateIntradayMinuteCount)))) %>%
+           tidyr::replace_na(TRUE)) %>% 
+  dplyr::select(-HeartRateIntradayMinuteCount)
 
 colnames(df) <- tolower(colnames(df))
 
