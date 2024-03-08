@@ -10,10 +10,16 @@ vars <-
   filter(grepl(dataset, Export, ignore.case = TRUE)) %>% 
   pull(Variable)
 
+# Exclude participants who have i2b2 summaries from fitbit data
+participants_to_exclude <- 
+  read.csv(file.path(outputConceptsDir, "fitbit_participants.csv")) %>% 
+  pull(participantidentifier)
+
 # Load the desired subset of this dataset in memory
 df <- 
   arrow::open_dataset(file.path(downloadLocation, glue::glue("dataset_{dataset}"))) %>% 
   select(all_of(vars)) %>% 
+  dplyr::filter(!(ParticipantIdentifier %in% participants_to_exclude)) %>%
   dplyr::filter(
     Type=="RespiratoryRate" | 
       Type=="HeartRate" | 
@@ -95,6 +101,16 @@ output_concepts <-
   dplyr::filter(nval_num != "<null>" | tval_char != "<null>")
 cat("recoverSummarizeR::process_df() completed.\n")
 
+# Identify the participants who have output concepts derived from healthkit variables
+curr_hk_participants <- 
+  sort(unique(output_concepts$participantidentifier)) %>% 
+  as.data.frame() %>% 
+  dplyr::rename(participantidentifier = ".")
+
+curr_hk_participants %>% 
+  write.csv(file.path(outputConceptsDir, "hk_participants.csv"), 
+            row.names = F)
+
 # Write the output
 output_concepts %>% 
   write.csv(file.path(outputConceptsDir, glue::glue("{dataset}.csv")), row.names = F)
@@ -106,7 +122,9 @@ cat(glue::glue("Finished transforming data for {dataset}"),"\n\n")
 rm(dataset,
    vars, 
    df, 
+   participants_to_exclude,
    df_melted_filtered, 
    df_summarized, 
    tmp_concept_replacements,
-   output_concepts)
+   output_concepts,
+   curr_hk_participants)

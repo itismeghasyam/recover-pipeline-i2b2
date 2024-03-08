@@ -10,11 +10,17 @@ vars <-
   filter(grepl(dataset, Export, ignore.case = TRUE)) %>% 
   pull(Variable)
 
+# Exclude participants who have i2b2 summaries from fitbit data
+participants_to_exclude <- 
+  read.csv(file.path(outputConceptsDir, "fitbit_participants.csv")) %>% 
+  pull(participantidentifier)
+
 # Load the desired subset of this dataset in memory
 df <- 
   arrow::open_dataset(file.path(downloadLocation, glue::glue("dataset_{dataset}"))) %>% 
   select(all_of(vars)) %>% 
   dplyr::filter(Type=="DailySteps") %>% 
+  dplyr::filter(!(ParticipantIdentifier %in% participants_to_exclude)) %>% 
   rename(concept = Type) %>% 
   mutate(Value = as.numeric(Value)) %>% 
   collect()
@@ -69,6 +75,24 @@ output_concepts <-
   dplyr::filter(nval_num != "<null>" | tval_char != "<null>")
 cat("recoverSummarizeR::process_df() completed.\n")
 
+# Identify the participants who have output concepts derived from healthkit variables
+curr_hk_participants <- 
+  sort(unique(output_concepts$participantidentifier)) %>% 
+  as.data.frame() %>% 
+  dplyr::rename(participantidentifier = ".")
+
+prev_hk_participants <- 
+  read.csv(file.path(outputConceptsDir, "hk_participants.csv"))
+
+hk_participants <- 
+  dplyr::bind_rows(prev_hk_participants, 
+                   curr_hk_participants) %>% 
+  distinct()
+
+hk_participants %>% 
+  write.csv(file.path(outputConceptsDir, "hk_participants.csv"), 
+            row.names = F)
+
 # Write the output
 output_concepts %>% 
   write.csv(file.path(outputConceptsDir, glue::glue("{dataset}.csv")), row.names = F)
@@ -80,10 +104,14 @@ cat(glue::glue("Finished transforming data for {dataset}"),"\n\n")
 rm(dataset,
    vars,
    df,
+   participants_to_exclude,
    criteria,
    bounds,
    df_filtered,
    df_melted_filtered,
    df_summarized,
    tmp_concept_replacements,
-   output_concepts)
+   output_concepts,
+   curr_hk_participants,
+   prev_hk_participants,
+   hk_participants)
