@@ -39,8 +39,8 @@ combined_output_concepts <- bind_rows(combined_device,
 combined_output_concepts <- combined_output_concepts[!duplicated(combined_output_concepts), ]
 
 combined_output_concepts %>% 
-  write.csv(file.path(outputConceptsDir, "final_output_concepts.csv"), row.names = F)
-cat(glue::glue("output_concepts written to {file.path(outputConceptsDir, 'final_output_concepts.csv')}"),"\n")
+  write.csv(file.path(outputConceptsDir, "output_concepts.csv"), row.names = F)
+cat(glue::glue("output_concepts written to {file.path(outputConceptsDir, 'output_concepts.csv')}"),"\n")
 
 # Remove objects created here from the global environment
 rm(datasets,
