@@ -13,12 +13,13 @@ vars <-
 # Load the desired subset of this dataset in memory
 df <- 
   arrow::open_dataset(file.path(downloadLocation, glue::glue("dataset_{dataset}"))) %>% 
-  mutate(Tracker_Steps = as.numeric(Tracker_Steps),
+  mutate(Steps = as.numeric(Steps),
          HeartRateIntradayMinuteCount = as.numeric(HeartRateIntradayMinuteCount)) %>% 
-  filter(Tracker_Steps != 0, 
-         HeartRateIntradayMinuteCount != 0 | !is.na(HeartRateIntradayMinuteCount)) %>% 
-  select(all_of(vars)) %>% 
-  collect()
+  select(all_of(c(vars, "HeartRateIntradayMinuteCount"))) %>% 
+  collect() %>% 
+  filter((!(Steps==0 & (HeartRateIntradayMinuteCount==0 | is.na(HeartRateIntradayMinuteCount)))) %>%
+           tidyr::replace_na(TRUE)) %>% 
+  dplyr::select(-HeartRateIntradayMinuteCount)
 
 colnames(df) <- tolower(colnames(df))
 
@@ -90,6 +91,24 @@ output_concepts <-
   dplyr::filter(nval_num != "<null>" | tval_char != "<null>")
 cat("recoverSummarizeR::process_df() completed.\n")
 
+# Identify the participants who have output concepts derived from fitbit variables
+curr_fitbit_participants <- 
+  sort(unique(output_concepts$participantidentifier)) %>% 
+  as.data.frame() %>% 
+  dplyr::rename(participantidentifier = ".")
+
+prev_fitbit_participants <- 
+  read.csv(file.path(outputConceptsDir, "fitbit_participants.csv"))
+
+fitbit_participants <- 
+  dplyr::bind_rows(prev_fitbit_participants, 
+                   curr_fitbit_participants) %>% 
+  distinct()
+
+fitbit_participants %>% 
+  write.csv(file.path(outputConceptsDir, "fitbit_participants.csv"), 
+            row.names = F)
+
 # Write the output
 output_concepts %>% 
   write.csv(file.path(outputConceptsDir, glue::glue("{dataset}.csv")), row.names = F)
@@ -110,4 +129,7 @@ rm(dataset,
    upper_bound,
    df_melted_filtered, 
    df_summarized, 
-   output_concepts)
+   output_concepts,
+   curr_fitbit_participants, 
+   prev_fitbit_participants, 
+   fitbit_participants)

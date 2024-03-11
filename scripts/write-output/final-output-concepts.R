@@ -3,7 +3,6 @@ cat("Creating final output concepts\n")
 # Read each dataset's (intermediate) i2b2 output concepts CSV file, combine 
 # them, and de-duplicate data if it already exists (fitbit data is highest 
 # priority, then healthkit, then other)
-
 datasets <- selected_vars$Export %>% unique()
 datasets[datasets %in% c("fitbitdevices")] <- "participant_devices"
 
@@ -12,6 +11,7 @@ output_concepts <-
     output_concepts_path <- file.path(outputConceptsDir, paste0(x, ".csv"))
     if (file.exists(output_concepts_path)) {
       read.csv(output_concepts_path, 
+               stringsAsFactors = F,
                tryLogical = F,
                colClasses = "character")
     }
@@ -35,12 +35,11 @@ combined_device <- combined_device[!duplicated(combined_device), ]
 combined_output_concepts <- bind_rows(combined_device, 
                                       combined_fitbit, 
                                       combined_healthkit)
-# dupes <- combined_output_concepts[duplicated(combined_output_concepts),]
 combined_output_concepts <- combined_output_concepts[!duplicated(combined_output_concepts), ]
 
 combined_output_concepts %>% 
-  write.csv(file.path(outputConceptsDir, "final_output_concepts.csv"), row.names = F)
-cat(glue::glue("output_concepts written to {file.path(outputConceptsDir, 'final_output_concepts.csv')}"),"\n")
+  write.csv(file.path(outputConceptsDir, "output_concepts.csv"), row.names = F)
+cat(glue::glue("output_concepts written to {file.path(outputConceptsDir, 'output_concepts.csv')}"),"\n")
 
 # Remove objects created here from the global environment
 rm(datasets,
