@@ -39,7 +39,7 @@ hk_participants <- read.csv(file.path(outputConceptsDir, "hk_participants.csv"))
 
 df$healthkitv2samples <- 
   df$healthkitv2samples %>% 
-  dplyr::filter(participantidentifier %in% hk_participants) %>%
+  dplyr::filter(participantidentifier %in% hk_participants$participantidentifier) %>%
   mutate(type = case_when(device_manufacturer %in% c("Apple", "Apple Inc.") ~ "Apple",
                           device_manufacturer %in% c("Garmin") ~ "Garmin",
                           device_manufacturer %in% c("Polar Electro Oy") ~ "Polar",
