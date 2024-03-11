@@ -3,7 +3,6 @@ cat("Creating final output concepts\n")
 # Read each dataset's (intermediate) i2b2 output concepts CSV file, combine 
 # them, and de-duplicate data if it already exists (fitbit data is highest 
 # priority, then healthkit, then other)
-
 datasets <- selected_vars$Export %>% unique()
 datasets[datasets %in% c("fitbitdevices")] <- "participant_devices"
 
@@ -35,7 +34,6 @@ combined_device <- combined_device[!duplicated(combined_device), ]
 combined_output_concepts <- bind_rows(combined_device, 
                                       combined_fitbit, 
                                       combined_healthkit)
-# dupes <- combined_output_concepts[duplicated(combined_output_concepts),]
 combined_output_concepts <- combined_output_concepts[!duplicated(combined_output_concepts), ]
 
 combined_output_concepts %>% 
