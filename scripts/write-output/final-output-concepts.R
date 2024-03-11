@@ -11,6 +11,7 @@ output_concepts <-
     output_concepts_path <- file.path(outputConceptsDir, paste0(x, ".csv"))
     if (file.exists(output_concepts_path)) {
       read.csv(output_concepts_path, 
+               stringsAsFactors = F,
                tryLogical = F,
                colClasses = "character")
     }
