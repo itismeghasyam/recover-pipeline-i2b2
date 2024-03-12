@@ -1,3 +1,4 @@
+a <- Sys.time()
 # Fetch data
 source("scripts/fetch-data/fetch_data.R")
 
@@ -12,6 +13,10 @@ source("scripts/process-data/participant_devices.R")
 
 # Create final output concepts
 source("scripts/write-output/final-output-concepts.R")
+b <- Sys.time()
+b-a
 
 # Egress
 source("scripts/egress/egress.R")
+c <- Sys.time()
+c-b
