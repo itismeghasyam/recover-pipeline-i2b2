@@ -39,13 +39,16 @@ df <-
 colnames(df) <- tolower(colnames(df))
 
 # Get QA/QC ranges for variables and exclude values outside the ranges
-criteria <- list(selected_vars$Variable=="AverageHeartRate" & selected_vars$Export=="fitbitactivitylogs",
-             selected_vars$Variable=="BreathingRate" & selected_vars$Export=="fitbitdailydata",
-             selected_vars$Variable=="SpO2_Avg" & selected_vars$Export=="fitbitdailydata")
+criteria <- 
+  list(selected_vars$Variable=="AverageHeartRate" & selected_vars$Export=="fitbitactivitylogs",
+       selected_vars$Variable=="BreathingRate" & selected_vars$Export=="fitbitdailydata",
+       selected_vars$Variable=="SpO2_Avg" & selected_vars$Export=="fitbitdailydata",
+       selected_vars$Variable=="Hrv_DailyRmssd" & selected_vars$Export=="fitbitdailydata")
 
-bounds <- data.frame(Variable = c("HeartRate", "RespiratoryRate", "OxygenSaturation"),
-                     Lower_Bound = sapply(criteria, function(x) selected_vars$Lower_Bound[x]), 
-                     Upper_Bound = sapply(criteria, function(x) selected_vars$Upper_Bound[x]))
+bounds <- 
+  data.frame(Variable = c("HeartRate", "RespiratoryRate", "OxygenSaturation", "HeartRateVariability"),
+             Lower_Bound = sapply(criteria, function(x) selected_vars$Lower_Bound[x]), 
+             Upper_Bound = sapply(criteria, function(x) selected_vars$Upper_Bound[x]))
 
 bounds$Lower_Bound[bounds$Variable=="OxygenSaturation"] <- bounds$Lower_Bound[bounds$Variable=="OxygenSaturation"]/100
 bounds$Upper_Bound[bounds$Variable=="OxygenSaturation"] <- bounds$Upper_Bound[bounds$Variable=="OxygenSaturation"]/100
