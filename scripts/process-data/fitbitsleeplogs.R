@@ -214,7 +214,10 @@ sleeplogsdetails_df <-
   arrow::open_dataset(file.path(downloadLocation, "dataset_fitbitsleeplogs_sleeplogdetails")) %>% 
   select(all_of(sleeplogsdetails_vars)) %>% 
   collect() %>% 
-  left_join(y = (df %>% select(LogId, IsMainSleep)), by = "LogId")
+  left_join(y = (df %>% select(LogId, IsMainSleep)), by = "LogId") %>% 
+  group_by(LogId) %>% 
+  arrange(StartDate, .by_group = TRUE) %>% 
+  ungroup()
 
 numawakenings_logid_filtered <- 
   sleeplogsdetails_df %>% 
