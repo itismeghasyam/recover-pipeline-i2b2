@@ -163,7 +163,7 @@ numepisodes_df_alltime <-
          NumEpisodes = ifelse(!is.na(LogId), 1, NA)) %>% 
   group_by(ParticipantIdentifier, startdate2) %>% 
   select(ParticipantIdentifier, startdate2, NumEpisodes) %>% 
-  summarise(numeps = sum(NumEpisodes)) %>% 
+  summarise(numeps = sum(NumEpisodes), .groups = "keep") %>% 
   ungroup() %>% 
   group_by(ParticipantIdentifier) %>% 
   summarise(startdate = min(startdate2),
@@ -172,13 +172,14 @@ numepisodes_df_alltime <-
             variance = var(numeps, na.rm = T), 
             `5pct` = stats::quantile(as.numeric(numeps), 0.05, na.rm = T), 
             `95pct` = stats::quantile(as.numeric(numeps), 0.95, na.rm = T), 
-            numrecords = dplyr::n()) %>% 
+            numrecords = dplyr::n(),
+            .groups = "keep") %>% 
   ungroup() %>% 
   left_join(y = 
               df %>% 
               select(ParticipantIdentifier, EndDate) %>% 
               group_by(ParticipantIdentifier) %>% 
-              summarise(enddate = max(lubridate::as_date(EndDate))) %>% 
+              summarise(enddate = max(lubridate::as_date(EndDate)), .groups = "keep") %>% 
               ungroup(), 
             by = "ParticipantIdentifier") %>% 
   select(ParticipantIdentifier, startdate, enddate, tidyselect::everything())
@@ -197,7 +198,8 @@ numepisodes_df_weekly <-
             variance = var(NumEpisodes, na.rm = T), 
             `5pct` = stats::quantile(as.numeric(NumEpisodes), 0.05, na.rm = T), 
             `95pct` = stats::quantile(as.numeric(NumEpisodes), 0.95, na.rm = T), 
-            numrecords = dplyr::n()) %>% 
+            numrecords = dplyr::n(),
+            .groups = "keep") %>% 
   ungroup() %>% 
   rename(startdate = startdate3, enddate = enddate3) %>% 
   select(ParticipantIdentifier, startdate, enddate, tidyselect::everything())
@@ -212,15 +214,19 @@ sleeplogsdetails_df <-
   arrow::open_dataset(file.path(downloadLocation, "dataset_fitbitsleeplogs_sleeplogdetails")) %>% 
   select(all_of(sleeplogsdetails_vars)) %>% 
   collect() %>% 
-  left_join(y = (df %>% select(LogId, IsMainSleep)), by = "LogId")
+  left_join(y = (df %>% select(LogId, IsMainSleep)), by = "LogId") %>% 
+  group_by(LogId) %>% 
+  arrange(StartDate, .by_group = TRUE) %>% 
+  ungroup()
 
 numawakenings_logid_filtered <- 
   sleeplogsdetails_df %>% 
   filter(IsMainSleep==TRUE) %>% 
   group_by(LogId) %>% 
   summarise(NumAwakenings = sum(Value %in% c("wake", "awake") &
-                                     !(row_number() == 1 & Value %in% c("wake", "awake")) &
-                                     !(row_number() == n() & Value %in% c("wake", "awake")))) %>% 
+                                  !(row_number() == 1 & Value %in% c("wake", "awake")) &
+                                  !(row_number() == n() & Value %in% c("wake", "awake"))), 
+            .groups = "keep") %>% 
   ungroup()
 
 # Merge the original df with the numawakenings df to create a united df
