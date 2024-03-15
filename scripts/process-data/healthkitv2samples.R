@@ -36,6 +36,8 @@ df <-
   mutate(Value = as.numeric(Value)) %>% 
   collect()
 
+df$Value[df$concept=="OxygenSaturation"] <- df$Value[df$concept=="OxygenSaturation"]*100
+
 colnames(df) <- tolower(colnames(df))
 
 # Get QA/QC ranges for variables and exclude values outside the ranges
@@ -49,9 +51,6 @@ bounds <-
   data.frame(Variable = c("HeartRate", "RespiratoryRate", "OxygenSaturation", "HeartRateVariability"),
              Lower_Bound = sapply(criteria, function(x) selected_vars$Lower_Bound[x]), 
              Upper_Bound = sapply(criteria, function(x) selected_vars$Upper_Bound[x]))
-
-bounds$Lower_Bound[bounds$Variable=="OxygenSaturation"] <- bounds$Lower_Bound[bounds$Variable=="OxygenSaturation"]/100
-bounds$Upper_Bound[bounds$Variable=="OxygenSaturation"] <- bounds$Upper_Bound[bounds$Variable=="OxygenSaturation"]/100
 
 df_filtered <- df
 for (i in 1:nrow(bounds)) {
