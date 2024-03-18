@@ -53,6 +53,7 @@ df_joined <-
   summarise(type = toString(sort(unique(type)))) %>% 
   mutate(concept = "mhp:device") %>% 
   rename(value = type) %>% 
+  mutate(value = ifelse({grepl(", Apple|Apple, ", value)}, "Apple", value)) %>% 
   select(all_of(c("participantidentifier", "concept", "value"))) %>% 
   ungroup()
 
