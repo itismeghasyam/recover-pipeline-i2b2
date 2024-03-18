@@ -13,18 +13,14 @@ vars <- list(fitbitdevices = c("ParticipantIdentifier",
 
 # Load the desired subset of this dataset in memory
 df <- 
-  sapply(dataset, function(x) {
+  lapply(dataset, function(x) {
     tmp <- vars[[x]]
     arrow::open_dataset(file.path(downloadLocation, glue::glue("dataset_{x}"))) %>% 
       select(all_of(tmp)) %>% 
+      dplyr::rename_with(tolower) %>% 
       collect()
-  })
-
-df <- 
-  lapply(df, function(x) {
-    colnames(x) <- tolower(colnames(x))
-    return(x)
-  })
+  }) %>% 
+  setNames(dataset)
 
 # Get lists of participants that i2b2 summaries are already generated for and 
 # add a variable to indicate device type
