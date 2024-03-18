@@ -29,14 +29,15 @@ fitbit_participants <- read.csv(file.path(outputConceptsDir, "fitbit_participant
 df$fitbitdevices <- 
   df$fitbitdevices %>% 
   dplyr::filter(participantidentifier %in% fitbit_participants$participantidentifier) %>%
-  dplyr::mutate(type = ifelse(is.na(device) | device == "", NA, "fitbit"))
+  dplyr::mutate(type = ifelse(is.na(device) | device == "", NA, "Fitbit"))
 
 hk_participants <- read.csv(file.path(outputConceptsDir, "hk_participants.csv"))
 
 df$healthkitv2samples <- 
   df$healthkitv2samples %>% 
   dplyr::filter(participantidentifier %in% hk_participants$participantidentifier) %>%
-  mutate(type = case_when(device_manufacturer %in% c("Apple", "Apple Inc.") ~ "Apple",
+  dplyr::filter(device_model != "iPhone") %>% 
+  mutate(type = case_when(device_manufacturer %in% c("Apple", "Apple Inc.") ~ "Apple Watch",
                           device_manufacturer %in% c("Garmin") ~ "Garmin",
                           device_manufacturer %in% c("Polar Electro Oy") ~ "Polar",
                           device_model %in% c("HRM808S") ~ "HRM808S",
@@ -53,7 +54,8 @@ df_joined <-
   summarise(type = toString(sort(unique(type)))) %>% 
   mutate(concept = "mhp:device") %>% 
   rename(value = type) %>% 
-  mutate(value = ifelse({grepl(", Apple|Apple, ", value)}, "Apple", value)) %>% 
+  mutate(value = ifelse({grepl(", Apple Watch|Apple Watch, ", value)}, "Apple Watch", value)) %>% 
+  filter(value != "Other") %>% 
   select(all_of(c("participantidentifier", "concept", "value"))) %>% 
   ungroup()
 
