@@ -62,7 +62,8 @@ rm(datasets,
    combined_fitbit,
    combined_healthkit,
    combined_device,
-   combined_output_concepts
+   combined_output_concepts,
+   valid_participants
 )
 
 cat("Finished creating final output concepts\n\n")
