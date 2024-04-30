@@ -163,11 +163,11 @@ cat("ecg_stat_summarize() completed.\n")
 
 # Add i2b2 columns from concept map (ontology file) and clean the output
 output_concepts <- 
-  process_df(df_summarized, 
-             concept_map, 
-             concept_replacements_reversed, 
-             concept_map_concepts = "CONCEPT_CD", 
-             concept_map_units = "UNITS_CD") %>% 
+  recoverSummarizeR::process_df(df_summarized, 
+                                concept_map, 
+                                concept_replacements_reversed, 
+                                concept_map_concepts = "CONCEPT_CD", 
+                                concept_map_units = "UNITS_CD") %>% 
   dplyr::mutate(nval_num = signif(nval_num, 9)) %>% 
   dplyr::arrange(concept) %>% 
   dplyr::mutate(dplyr::across(.cols = dplyr::everything(), .fns = as.character)) %>% 
