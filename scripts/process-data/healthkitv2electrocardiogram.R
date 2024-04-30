@@ -159,7 +159,7 @@ df_summarized <-
   ecg_stat_summarize() %>% 
   mutate(value = as.numeric(value)) %>% 
   distinct()
-cat("recoverSummarizeR::stat_summarize() completed.\n")
+cat("ecg_stat_summarize() completed.\n")
 
 # Add i2b2 columns from concept map (ontology file) and clean the output
 output_concepts <- 
