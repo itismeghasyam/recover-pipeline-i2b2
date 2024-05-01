@@ -1,3 +1,10 @@
+# Get config variables
+config::get(
+  file = "config/config.yml", 
+  config = "staging"
+) %>% 
+  list2env(envir = .GlobalEnv)
+
 # Fetch data
 tictoc::tic(msg = "INFO: Fetch data")
 source("scripts/fetch-data/fetch_data.R")

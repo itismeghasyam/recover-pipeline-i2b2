@@ -4,13 +4,6 @@ library(dplyr)
 
 cat("Fetching data\n")
 
-# Get config variables
-config::get(
-  file = "config/config.yml", 
-  config = "prod"
-) %>% 
-  list2env(envir = .GlobalEnv)
-
 synLogin()
 
 # Get input files from synapse
