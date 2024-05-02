@@ -45,7 +45,7 @@ source ~/.bash_profile
 
 ### Docker Container
 
-For the Docker method, there is a pre-published docker image available: [ghcr.io/sage-bionetworks/recover-pipeline-i2b2:main](https://github.com/orgs/Sage-Bionetworks/packages/container/package/recover-pipeline-i2b2)
+For the Docker method, there is a pre-published docker image available [here](https://github.com/orgs/Sage-Bionetworks/packages/container/package/recover-pipeline-i2b2).
 
 The primary purpose of using the Docker method is that the docker image published from this repo contains instructions to:
 
@@ -126,6 +126,7 @@ Variable | Definition | Example
 ---|---|---
 | `ontologyFileID` | A Synapse ID for the the i2b2 concepts map ontology file stored in Synapse. | syn12345678
 | `parquetDirID` | A Synapse ID for a folder entity in Synapse where the input data is stored. This should be the folder housing the post-ETL parquet data. | syn12345678
+| `deleteExistingDir` | Boolean representing if you want the `downloadLocation` folder to be removed before syncing input data there. Setting this to `TRUE` ensures that there is a new, clean location to sync the input data to and keep it isolated from unwanted data. | `TRUE`
 | `concept_replacements` | A named vector of strings and their replacements. The names must be valid values of the `concept_filter_col` column of the `concept_map` data frame. For RECOVER, `concept_map` is the ontology file data frame. | R Example<br>c('mins' = 'minutes', 'avghr' = 'averageheartrate', 'spo2' = 'spo2\_', 'hrv' = 'hrv_dailyrmssd', 'restinghr' = 'restingheartrate', 'sleepbrth' = 'sleepsummarybreath') | concept_cd
 | `synFolderID` | A Synapse ID for a folder entity in Synapse where you want to store the final output files. | syn12345678
 | `s3bucket` | The name of the S3 bucket containing input data | recover-bucket
