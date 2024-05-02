@@ -120,7 +120,7 @@ git clone https://github.com/Sage-Bionetworks/recover-pipeline-i2b2.git
 
 ### Config Parameters
 
-The environment variables passed to `docker run ...` are the input arguments of `recoversummarizer::summarize_pipeline()`, and as such must be provided in order to use the docker method. Please refer to the [recoverSummarizeR](https://github.com/Sage-Bionetworks/recoverSummarizeR) R package for more information on the `recoverSummarizeR` package and its functions.
+This table contains all of the parameters needed to run the pipeline, along with their definitions and examples.
 
 Variable | Definition | Example
 ---|---|---
