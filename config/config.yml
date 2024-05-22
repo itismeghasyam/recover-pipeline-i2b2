@@ -3,7 +3,7 @@ default:
 
 staging:
   ontologyFileID: syn52050046
-  parquetDirID: syn52504335
+  parquetDirID: syn59800646
   # dataset_name_filter: !expr c("fitbit","healthkit")
   deleteExistingDir: FALSE
   concept_replacements: !expr c("mins" = "minutes",
