@@ -3,7 +3,7 @@ default:
 
 staging:
   ontologyFileID: syn52050046
-  parquetDirID: syn58607995
+  parquetDirID: syn52504335
   # dataset_name_filter: !expr c("fitbit","healthkit")
   deleteExistingDir: FALSE
   concept_replacements: !expr c("mins" = "minutes",
@@ -18,7 +18,7 @@ staging:
   synFolderID: syn52504335
   # method: sts
   s3bucket: recover-main-project
-  s3basekey: main/archive/2024-04-23/
+  s3basekey: main/archive/2024-05-21/
   downloadLocation: ./temp-parquet
   selectedVarsFileID: syn53503994
   outputConceptsDir: ./temp-output-concepts
