@@ -1,6 +1,6 @@
 # Get config variables
 list2env(x = config::get(file = "config/config.yml", 
-                         config = "staging"),
+                         config = "prod"),
          envir = .GlobalEnv)
 
 # Fetch data
