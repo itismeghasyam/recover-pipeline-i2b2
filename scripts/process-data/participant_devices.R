@@ -54,8 +54,14 @@ df_joined <-
   summarise(type = toString(sort(unique(type)))) %>% 
   mutate(concept = "mhp:device") %>% 
   rename(value = type) %>% 
-  mutate(value = ifelse({grepl(", Apple Watch|Apple Watch, ", value)}, "Apple Watch", value)) %>% 
-  filter(value != "Other") %>% 
+  mutate(value = case_when(
+    stringr::str_detect(value, stringr::regex("Apple Watch", ignore_case = TRUE)) ~ "Apple Watch",
+    stringr::str_detect(value, stringr::regex("Garmin", ignore_case = TRUE)) ~ "Garmin",
+    stringr::str_detect(value, stringr::regex("Polar", ignore_case = TRUE)) ~ "Polar",
+    stringr::str_detect(value, stringr::regex("HRM808S", ignore_case = TRUE)) ~ "HRM808S",
+    .default = value
+  )) %>% 
+  filter(!stringr::str_detect(value, stringr::regex("Other", ignore_case = TRUE))) %>% 
   select(all_of(c("participantidentifier", "concept", "value"))) %>% 
   ungroup()
 
