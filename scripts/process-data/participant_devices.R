@@ -61,7 +61,7 @@ df_joined <-
     stringr::str_detect(value, stringr::regex("HRM808S", ignore_case = TRUE)) ~ "HRM808S",
     .default = value
   )) %>% 
-  filter(value != "Other") %>%
+  filter(!stringr::str_detect(value, stringr::regex("Other", ignore_case = TRUE))) %>% 
   select(all_of(c("participantidentifier", "concept", "value"))) %>% 
   ungroup()
 
