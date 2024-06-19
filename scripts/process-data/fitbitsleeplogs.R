@@ -204,7 +204,8 @@ numepisodes_df_weekly <-
   rename(startdate = startdate3, enddate = enddate3) %>% 
   select(ParticipantIdentifier, startdate, enddate, tidyselect::everything())
 
-# Use the sleeplogs_sleeplogdetails dataset to create the NumAwakenings derived variable
+# Use the sleeplogs_sleeplogdetails dataset to create NumAwakenings, 
+# REM Onset Latency, and REM Fragmentation Index derived variables
 sleeplogsdetails_vars <- 
   selected_vars %>% 
   filter(grepl("sleeplogdetails", Export, ignore.case = TRUE)) %>% 
@@ -227,6 +228,45 @@ numawakenings_logid_filtered <-
                                   !(row_number() == 1 & Value %in% c("wake", "awake")) &
                                   !(row_number() == n() & Value %in% c("wake", "awake"))), 
             .groups = "keep") %>% 
+  ungroup()
+
+regex_wake <- 
+  stringr::str_detect(
+    Value, 
+    stringr::regex("wake|awake", ignore_case = TRUE), 
+    negate = TRUE
+  )
+
+regex_rem <- 
+  stringr::str_detect(
+    Value, 
+    stringr::regex("rem", ignore_case = TRUE)
+  )
+
+rem_onset_latency <- 
+  sleeplogsdetails_df %>% 
+  filter(
+    if_any(
+      c(StartDate, EndDate, Value, Type), ~ . != "")) %>% 
+  filter(IsMainSleep==TRUE) %>% 
+  group_by(LogId) %>% 
+  arrange(
+    StartDate, 
+    .by_group = TRUE) %>% 
+  mutate(
+    firstNonWake = ifelse(
+      regex_wake & cumsum(regex_wake)==1, 
+      TRUE, 
+      FALSE),
+    firstREM = ifelse(
+      regex_rem & cumsum(regex_rem)==1, 
+      TRUE, 
+      FALSE)) %>% 
+  summarise(
+    remOnsetLatency = difftime(
+      StartDate[firstREM] %>% first() %>% lubridate::ymd_hms(), 
+      StartDate[firstNonWake] %>% first() %>% lubridate::ymd_hms(),
+      units = "secs")) %>% 
   ungroup()
 
 # Merge the original df with the numawakenings df to create a united df
