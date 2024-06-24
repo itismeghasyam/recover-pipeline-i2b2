@@ -215,6 +215,7 @@ sleeplogsdetails_df <-
   arrow::open_dataset(file.path(downloadLocation, "dataset_fitbitsleeplogs_sleeplogdetails")) %>% 
   select(all_of(sleeplogsdetails_vars)) %>% 
   collect() %>% 
+  distinct() %>% 
   left_join(y = (df %>% select(LogId, IsMainSleep)), by = "LogId") %>% 
   group_by(LogId) %>% 
   arrange(StartDate, .by_group = TRUE) %>% 
@@ -294,8 +295,8 @@ sleeplogsdetails_df %>%
   filter(if_any(c(StartDate, EndDate, Value, Type), ~ . != "")) %>% 
   filter(IsMainSleep==TRUE) %>% 
   group_by(LogId) %>% 
-  arrange(StartDate, .by_group = TRUE) %>% 
-  View
+  arrange(StartDate, .by_group = TRUE)
+
 
 # Merge the original df with the numawakenings df to create a united df
 df_joined <- left_join(x = df, y = numawakenings_logid_filtered, by = "LogId")
