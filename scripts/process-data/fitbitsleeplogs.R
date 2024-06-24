@@ -269,6 +269,34 @@ rem_onset_latency <-
       units = "secs")) %>% 
   ungroup()
 
+tmp <- 
+  sleeplogsdetails_df %>% 
+  filter(Value=="rem") %>% 
+  filter(IsMainSleep==TRUE) %>% 
+  mutate(remDuration = lubridate::ymd_hms(EndDate)-lubridate::ymd_hms(StartDate))
+
+tmp2 <- 
+  tmp %>% 
+  group_by(LogId) %>%
+  summarise(totalREM = sum(remDuration)) %>% 
+  ungroup()
+
+tmp3 <- 
+  df %>% 
+  select(LogId, ParticipantIdentifier, SleepLevelRem, IsMainSleep) %>% 
+  filter(IsMainSleep==TRUE) %>% 
+  left_join(ungroup(tmp2), by = join_by(LogId)) %>% 
+  mutate(minsTotalREM = as.numeric(totalREM/60)) %>% 
+  mutate(SleepLevelRem = as.numeric(SleepLevelRem)) %>% 
+  mutate(diff = SleepLevelRem-minsTotalREM)
+
+sleeplogsdetails_df %>% 
+  filter(if_any(c(StartDate, EndDate, Value, Type), ~ . != "")) %>% 
+  filter(IsMainSleep==TRUE) %>% 
+  group_by(LogId) %>% 
+  arrange(StartDate, .by_group = TRUE) %>% 
+  View
+
 # Merge the original df with the numawakenings df to create a united df
 df_joined <- left_join(x = df, y = numawakenings_logid_filtered, by = "LogId")
 
