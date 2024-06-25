@@ -216,51 +216,41 @@ sleeplogsdetails_df <-
   select(all_of(sleeplogsdetails_vars)) %>% 
   collect() %>% 
   distinct() %>% 
-  left_join(y = (df %>% select(LogId, IsMainSleep)), by = "LogId") %>% 
-  group_by(LogId) %>% 
+  left_join(y = (df %>% select(ParticipantIdentifier, LogId, IsMainSleep)), 
+            by = join_by("LogId", "ParticipantIdentifier")) %>% 
+  group_by(ParticipantIdentifier, LogId, id) %>% 
   arrange(StartDate, .by_group = TRUE) %>% 
   ungroup()
 
+sleeplogsdetails_df_unique <- sleeplogsdetails_df[!duplicated(sleeplogsdetails_df),]
+
 numawakenings_logid_filtered <- 
-  sleeplogsdetails_df %>% 
+  sleeplogsdetails_df_unique %>% 
   filter(IsMainSleep==TRUE) %>% 
-  group_by(LogId) %>% 
+  group_by(ParticipantIdentifier, LogId, id) %>% 
   summarise(NumAwakenings = sum(Value %in% c("wake", "awake") &
                                   !(row_number() == 1 & Value %in% c("wake", "awake")) &
                                   !(row_number() == n() & Value %in% c("wake", "awake"))), 
             .groups = "keep") %>% 
   ungroup()
 
-regex_wake <- 
-  stringr::str_detect(
-    Value, 
-    stringr::regex("wake|awake", ignore_case = TRUE), 
-    negate = TRUE
-  )
+regex_wake <- stringr::regex("wake|awake", ignore_case = TRUE)
 
-regex_rem <- 
-  stringr::str_detect(
-    Value, 
-    stringr::regex("rem", ignore_case = TRUE)
-  )
+regex_rem <- stringr::regex("rem", ignore_case = TRUE)
 
 rem_onset_latency <- 
-  sleeplogsdetails_df %>% 
-  filter(
-    if_any(
-      c(StartDate, EndDate, Value, Type), ~ . != "")) %>% 
+  sleeplogsdetails_df_unique %>% 
+  filter(if_any(c(StartDate, EndDate, Value, Type), ~ . != "")) %>% 
   filter(IsMainSleep==TRUE) %>% 
-  group_by(LogId) %>% 
-  arrange(
-    StartDate, 
-    .by_group = TRUE) %>% 
+  group_by(ParticipantIdentifier, LogId, id) %>% 
+  arrange(StartDate, .by_group = TRUE) %>% 
   mutate(
     firstNonWake = ifelse(
-      regex_wake & cumsum(regex_wake)==1, 
+      stringr::str_detect(Value,  regex_wake, negate = TRUE) & cumsum(stringr::str_detect(Value,  regex_wake, negate = TRUE))==1, 
       TRUE, 
       FALSE),
     firstREM = ifelse(
-      regex_rem & cumsum(regex_rem)==1, 
+      stringr::str_detect(Value, regex_rem) & cumsum(stringr::str_detect(Value, regex_rem))==1, 
       TRUE, 
       FALSE)) %>% 
   summarise(
@@ -270,33 +260,22 @@ rem_onset_latency <-
       units = "secs")) %>% 
   ungroup()
 
-tmp <- 
-  sleeplogsdetails_df %>% 
-  filter(Value=="rem") %>% 
-  filter(IsMainSleep==TRUE) %>% 
-  mutate(remDuration = lubridate::ymd_hms(EndDate)-lubridate::ymd_hms(StartDate))
-
-tmp2 <- 
-  tmp %>% 
-  group_by(LogId) %>%
-  summarise(totalREM = sum(remDuration)) %>% 
-  ungroup()
-
-tmp3 <- 
-  df %>% 
-  select(LogId, ParticipantIdentifier, SleepLevelRem, IsMainSleep) %>% 
-  filter(IsMainSleep==TRUE) %>% 
-  left_join(ungroup(tmp2), by = join_by(LogId)) %>% 
-  mutate(minsTotalREM = as.numeric(totalREM/60)) %>% 
-  mutate(SleepLevelRem = as.numeric(SleepLevelRem)) %>% 
-  mutate(diff = SleepLevelRem-minsTotalREM)
-
-sleeplogsdetails_df %>% 
+rem_transitions <- 
+  sleeplogsdetails_df_unique %>% 
   filter(if_any(c(StartDate, EndDate, Value, Type), ~ . != "")) %>% 
   filter(IsMainSleep==TRUE) %>% 
-  group_by(LogId) %>% 
-  arrange(StartDate, .by_group = TRUE)
+  group_by(ParticipantIdentifier, LogId, id) %>% 
+  arrange(StartDate, .by_group = TRUE) %>% 
+  mutate(prevValue = dplyr::lag(Value, 1)) %>% 
+  filter(prevValue == "rem" & Value != "rem") %>%
+  summarise(remTransitions = n())
 
+rem_fragmentation_index <- 
+  rem_transitions %>% 
+  left_join(y = (df %>% select(ParticipantIdentifier, LogId, SleepLevelRem)), 
+            by = join_by("ParticipantIdentifier", "LogId")) %>% 
+  mutate(SleepLevelRem = as.numeric(SleepLevelRem),
+         remFragmentationIndex = remTransitions/(SleepLevelRem/60))
 
 # Merge the original df with the numawakenings df to create a united df
 df_joined <- left_join(x = df, y = numawakenings_logid_filtered, by = "LogId")
@@ -321,7 +300,8 @@ approved_concepts_summarized <-
     excluded_concepts
   )
 
-df_joined[approved_concepts_summarized] <- lapply(df_joined[approved_concepts_summarized], as.numeric)
+df_joined[approved_concepts_summarized] <- 
+  lapply(df_joined[approved_concepts_summarized], as.numeric())
 
 # Get QA/QC ranges for variables and exclude values outside the ranges
 bounds <- 
