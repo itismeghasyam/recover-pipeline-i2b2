@@ -232,7 +232,8 @@ numawakenings_logid_filtered <-
                                   !(row_number() == 1 & Value %in% c("wake", "awake")) &
                                   !(row_number() == n() & Value %in% c("wake", "awake"))), 
             .groups = "keep") %>% 
-  ungroup()
+  ungroup() %>% 
+  select(ParticipantIdentifier, LogId, NumAwakenings)
 
 regex_wake <- stringr::regex("wake|awake", ignore_case = TRUE)
 
@@ -258,7 +259,8 @@ rem_onset_latency <-
       StartDate[firstREM] %>% first() %>% lubridate::ymd_hms(), 
       StartDate[firstNonWake] %>% first() %>% lubridate::ymd_hms(),
       units = "secs")) %>% 
-  ungroup()
+  ungroup() %>% 
+  select(ParticipantIdentifier, LogId, remOnsetLatency)
 
 rem_transitions <- 
   sleeplogsdetails_df_unique %>% 
@@ -274,11 +276,17 @@ rem_fragmentation_index <-
   rem_transitions %>% 
   left_join(y = (df %>% select(ParticipantIdentifier, LogId, SleepLevelRem)), 
             by = join_by("ParticipantIdentifier", "LogId")) %>% 
+  filter(SleepLevelRem > 0) %>%
   mutate(SleepLevelRem = as.numeric(SleepLevelRem),
-         remFragmentationIndex = remTransitions/(SleepLevelRem/60))
+         remFragmentationIndex = remTransitions/(SleepLevelRem/60)) %>% 
+  select(ParticipantIdentifier, LogId, remFragmentationIndex)
 
-# Merge the original df with the numawakenings df to create a united df
-df_joined <- left_join(x = df, y = numawakenings_logid_filtered, by = "LogId")
+# Merge the original df with the numawakenings, remOnsetLatency, and
+# remFragmentationIndex dfs to create a united df
+df_joined <- 
+  left_join(x = df, y = numawakenings_logid_filtered, by = join_by("ParticipantIdentifier", "LogId")) %>% 
+  left_join(y = rem_onset_latency, by = join_by("ParticipantIdentifier", "LogId")) %>% 
+  left_join(y = rem_fragmentation_index, by = join_by("ParticipantIdentifier", "LogId"))
 
 colnames(df_joined) <- tolower(colnames(df_joined))
 
@@ -301,7 +309,7 @@ approved_concepts_summarized <-
   )
 
 df_joined[approved_concepts_summarized] <- 
-  lapply(df_joined[approved_concepts_summarized], as.numeric())
+  lapply(df_joined[approved_concepts_summarized], as.numeric)
 
 # Get QA/QC ranges for variables and exclude values outside the ranges
 bounds <- 
@@ -438,6 +446,11 @@ rm(sleeplogs_stat_summarize,
    sleeplogsdetails_vars,
    sleeplogsdetails_df,
    numawakenings_logid_filtered,
+   regex_wake,
+   regex_rem,
+   rem_onset_latency,
+   rem_transitions,
+   rem_fragmentation_index,
    df_joined,
    excluded_concepts, 
    approved_concepts_summarized, 
