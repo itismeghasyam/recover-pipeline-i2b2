@@ -204,7 +204,8 @@ numepisodes_df_weekly <-
   rename(startdate = startdate3, enddate = enddate3) %>% 
   select(ParticipantIdentifier, startdate, enddate, tidyselect::everything())
 
-# Use the sleeplogs_sleeplogdetails dataset to create the NumAwakenings derived variable
+# Use the sleeplogs_sleeplogdetails dataset to create NumAwakenings, 
+# REM Onset Latency, and REM Fragmentation Index derived variables
 sleeplogsdetails_vars <- 
   selected_vars %>% 
   filter(grepl("sleeplogdetails", Export, ignore.case = TRUE)) %>% 
@@ -214,23 +215,78 @@ sleeplogsdetails_df <-
   arrow::open_dataset(file.path(downloadLocation, "dataset_fitbitsleeplogs_sleeplogdetails")) %>% 
   select(all_of(sleeplogsdetails_vars)) %>% 
   collect() %>% 
-  left_join(y = (df %>% select(LogId, IsMainSleep)), by = "LogId") %>% 
-  group_by(LogId) %>% 
+  distinct() %>% 
+  left_join(y = (df %>% select(ParticipantIdentifier, LogId, IsMainSleep)), 
+            by = join_by("LogId", "ParticipantIdentifier")) %>% 
+  group_by(ParticipantIdentifier, LogId, id) %>% 
   arrange(StartDate, .by_group = TRUE) %>% 
   ungroup()
 
+sleeplogsdetails_df_unique <- sleeplogsdetails_df[!duplicated(sleeplogsdetails_df),]
+
 numawakenings_logid_filtered <- 
-  sleeplogsdetails_df %>% 
+  sleeplogsdetails_df_unique %>% 
   filter(IsMainSleep==TRUE) %>% 
-  group_by(LogId) %>% 
+  group_by(ParticipantIdentifier, LogId, id) %>% 
   summarise(NumAwakenings = sum(Value %in% c("wake", "awake") &
                                   !(row_number() == 1 & Value %in% c("wake", "awake")) &
                                   !(row_number() == n() & Value %in% c("wake", "awake"))), 
             .groups = "keep") %>% 
-  ungroup()
+  ungroup() %>% 
+  select(ParticipantIdentifier, LogId, NumAwakenings)
 
-# Merge the original df with the numawakenings df to create a united df
-df_joined <- left_join(x = df, y = numawakenings_logid_filtered, by = "LogId")
+regex_wake <- stringr::regex("wake|awake", ignore_case = TRUE)
+
+regex_rem <- stringr::regex("rem", ignore_case = TRUE)
+
+rem_onset_latency <- 
+  sleeplogsdetails_df_unique %>% 
+  filter(if_any(c(StartDate, EndDate, Value, Type), ~ . != "")) %>% 
+  filter(IsMainSleep==TRUE) %>% 
+  group_by(ParticipantIdentifier, LogId, id) %>% 
+  arrange(StartDate, .by_group = TRUE) %>% 
+  mutate(
+    firstNonWake = ifelse(
+      stringr::str_detect(Value,  regex_wake, negate = TRUE) & cumsum(stringr::str_detect(Value,  regex_wake, negate = TRUE))==1, 
+      TRUE, 
+      FALSE),
+    firstREM = ifelse(
+      stringr::str_detect(Value, regex_rem) & cumsum(stringr::str_detect(Value, regex_rem))==1, 
+      TRUE, 
+      FALSE)) %>% 
+  summarise(
+    remOnsetLatency = difftime(
+      StartDate[firstREM] %>% first() %>% lubridate::ymd_hms(), 
+      StartDate[firstNonWake] %>% first() %>% lubridate::ymd_hms(),
+      units = "secs")) %>% 
+  ungroup() %>% 
+  select(ParticipantIdentifier, LogId, remOnsetLatency)
+
+rem_transitions <- 
+  sleeplogsdetails_df_unique %>% 
+  filter(if_any(c(StartDate, EndDate, Value, Type), ~ . != "")) %>% 
+  filter(IsMainSleep==TRUE) %>% 
+  group_by(ParticipantIdentifier, LogId, id) %>% 
+  arrange(StartDate, .by_group = TRUE) %>% 
+  mutate(prevValue = dplyr::lag(Value, 1)) %>% 
+  filter(prevValue == "rem" & Value != "rem") %>%
+  summarise(remTransitions = n())
+
+rem_fragmentation_index <- 
+  rem_transitions %>% 
+  left_join(y = (df %>% select(ParticipantIdentifier, LogId, SleepLevelRem)), 
+            by = join_by("ParticipantIdentifier", "LogId")) %>% 
+  filter(SleepLevelRem > 0) %>%
+  mutate(SleepLevelRem = as.numeric(SleepLevelRem),
+         remFragmentationIndex = remTransitions/(SleepLevelRem/60)) %>% 
+  select(ParticipantIdentifier, LogId, remFragmentationIndex)
+
+# Merge the original df with the numawakenings, remOnsetLatency, and
+# remFragmentationIndex dfs to create a united df
+df_joined <- 
+  left_join(x = df, y = numawakenings_logid_filtered, by = join_by("ParticipantIdentifier", "LogId")) %>% 
+  left_join(y = rem_onset_latency, by = join_by("ParticipantIdentifier", "LogId")) %>% 
+  left_join(y = rem_fragmentation_index, by = join_by("ParticipantIdentifier", "LogId"))
 
 colnames(df_joined) <- tolower(colnames(df_joined))
 
@@ -252,7 +308,8 @@ approved_concepts_summarized <-
     excluded_concepts
   )
 
-df_joined[approved_concepts_summarized] <- lapply(df_joined[approved_concepts_summarized], as.numeric)
+df_joined[approved_concepts_summarized] <- 
+  lapply(df_joined[approved_concepts_summarized], as.numeric)
 
 # Get QA/QC ranges for variables and exclude values outside the ranges
 bounds <- 
@@ -389,6 +446,11 @@ rm(sleeplogs_stat_summarize,
    sleeplogsdetails_vars,
    sleeplogsdetails_df,
    numawakenings_logid_filtered,
+   regex_wake,
+   regex_rem,
+   rem_onset_latency,
+   rem_transitions,
+   rem_fragmentation_index,
    df_joined,
    excluded_concepts, 
    approved_concepts_summarized, 
