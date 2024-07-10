@@ -1,6 +1,6 @@
 ## recover-pipeline-i2b2
 
-[![Build and publish a Docker image](https://github.com/Sage-Bionetworks/recover-parquet-external/actions/workflows/docker-build.yml/badge.svg?branch=main)](https://github.com/Sage-Bionetworks/recover-parquet-external/actions/workflows/docker-build.yml)
+[![Docker image](https://github.com/Sage-Bionetworks/recover-parquet-external/actions/workflows/docker-build.yml/badge.svg?branch=main)](https://github.com/Sage-Bionetworks/recover-parquet-external/actions/workflows/docker-build.yml)
 
 This repo hosts the code for the egress pipeline used by the Digital Health Data Repository (Sage Bionetworks) for data enrichment and summarization for i2b2.
 
