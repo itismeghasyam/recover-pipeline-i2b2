@@ -63,7 +63,7 @@ tmp_concept_replacements <- c("dailysteps" = "steps")
 
 # Add i2b2 columns from concept map (ontology file) and clean the output
 output_concepts <- 
-  process_df(df_summarized, 
+  recoverutils::process_df(df_summarized, 
              concept_map, 
              concept_replacements_reversed = tmp_concept_replacements, 
              concept_map_concepts = "CONCEPT_CD", 

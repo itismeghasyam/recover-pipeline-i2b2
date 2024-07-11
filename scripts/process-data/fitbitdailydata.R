@@ -79,7 +79,7 @@ cat("recoverutils::stat_summarize() completed.\n")
 
 # Add i2b2 columns from concept map (ontology file) and clean the output
 output_concepts <- 
-  process_df(df_summarized, 
+  recoverutils::process_df(df_summarized, 
              concept_map, 
              concept_replacements_reversed, 
              concept_map_concepts = "CONCEPT_CD", 

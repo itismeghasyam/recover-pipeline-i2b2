@@ -24,12 +24,12 @@ cat(glue::glue("Output concepts stored at {synFolderID}"), "\n\n")
 
 file_name <- "concepts_map.csv"
 write.csv(concept_map, file = file_name, row.names = F)
-store_in_syn(synFolderID, file_name, used_param = ontologyFileID)
+recoverutils::store_in_syn(synFolderID, file_name, used_param = ontologyFileID)
 cat(glue::glue("The input concept map used was stored at {synFolderID} as '{file_name}'"), "\n\n")
 
 file_name <- "selected_vars.csv"
 write.csv(selected_vars, file = file_name, row.names = F)
-store_in_syn(synFolderID, file_name, used_param = selectedVarsFileID)
+recoverutils::store_in_syn(synFolderID, file_name, used_param = selectedVarsFileID)
 cat(glue::glue("The input variable list used was stored at {synFolderID} as '{file_name}'"), "\n\n")
 
 rm(latest_commit,

@@ -8,11 +8,11 @@ synLogin()
 
 # Get input files from synapse
 concept_map <- 
-  syn_file_to_df(ontologyFileID, "CONCEPT_CD") %>% 
+  recoverutils::syn_file_to_df(ontologyFileID, "CONCEPT_CD") %>% 
   filter(CONCEPT_CD!="<null>")
 
 selected_vars <- 
-  syn_file_to_df(selectedVarsFileID) %>% 
+  recoverutils::syn_file_to_df(selectedVarsFileID) %>% 
   mutate(Lower_Bound = suppressWarnings(as.numeric(Lower_Bound)),
          Upper_Bound = suppressWarnings(as.numeric(Upper_Bound)))
 
@@ -49,7 +49,7 @@ system(sync_cmd)
 rm(sync_cmd)
 
 # For use in process-data steps
-concept_replacements_reversed <- vec_reverse(concept_replacements)
+concept_replacements_reversed <- recoverutils::vec_reverse(concept_replacements)
 
 if (!dir.exists(outputConceptsDir)) {
   dir.create(outputConceptsDir)
