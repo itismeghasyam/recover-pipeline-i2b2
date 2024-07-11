@@ -1,10 +1,8 @@
-library(synapser)
-library(recoverutils)
-library(dplyr)
+library(tidyverse)
 
 cat("Fetching data\n")
 
-synLogin()
+synapser::synLogin()
 
 # Get input files from synapse
 concept_map <- 
@@ -28,25 +26,33 @@ token <- synapser::synGetStsStorageToken(
   permission = "read_only",
   output_format = "json")
 
-if (s3bucket==token$bucket && s3basekey==token$baseKey) {
-  base_s3_uri <- paste0('s3://', token$bucket, '/', token$baseKey)
-} else {
-  base_s3_uri <- paste0('s3://', s3bucket, '/', s3basekey)
+bucket_path <- 
+  paste0(
+    token$bucket, '/', 
+    token$baseKey, '/', 
+    stringr::str_extract(s3basekey, stringr::regex("[\\d]{4}-[\\d]{2}-[\\d]{2}")), '/'
+  )
+
+s3 <- 
+  arrow::S3FileSystem$create(
+    access_key = token$accessKeyId,
+    secret_key = token$secretAccessKey,
+    session_token = token$sessionToken,
+    region="us-east-1"
+  )
+
+dataset_list <- 
+  s3$GetFileInfo(
+    arrow::FileSelector$create(
+      base_dir = bucket_path, 
+      recursive = FALSE
+    )
+  )
+
+dataset_paths <- character()
+for (dataset in dataset_list) {
+  dataset_paths <- c(dataset_paths, dataset$path)
 }
-
-Sys.setenv('AWS_ACCESS_KEY_ID'=token$accessKeyId,
-           'AWS_SECRET_ACCESS_KEY'=token$secretAccessKey,
-           'AWS_SESSION_TOKEN'=token$sessionToken)
-
-if (deleteExistingDir==TRUE) {
-  unlink(downloadLocation, recursive = T, force = T)
-}
-
-# Only sync the bucket folders containing the datasets we need
-inclusions <- paste0("--include \"*",dataset_name_filter,"*\"", collapse = " ")
-sync_cmd <- glue::glue('aws s3 sync {base_s3_uri} {downloadLocation} --exclude "*" {inclusions}')
-system(sync_cmd)
-rm(sync_cmd)
 
 # For use in process-data steps
 concept_replacements_reversed <- recoverutils::vec_reverse(concept_replacements)
