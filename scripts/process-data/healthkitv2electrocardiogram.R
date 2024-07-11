@@ -100,9 +100,7 @@ ecg_stat_summarize <- function(df) {
   return(result)
 }
 
-library(dplyr)
-
-dataset <- "healthkitv2electrocardiogram"
+dataset <- "healthkitv2electrocardiogram$"
 
 cat(glue::glue("Transforming data for {dataset}"),"\n")
 
@@ -119,7 +117,7 @@ participants_to_exclude <-
 
 # Load the desired subset of this dataset in memory and do some feature engineering for derived variables
 df <- 
-  arrow::open_dataset(file.path(downloadLocation, glue::glue("dataset_{dataset}"))) %>% 
+  arrow::open_dataset(s3$path(str_subset(dataset_paths, dataset))) %>% 
   select(all_of(c(vars))) %>% 
   dplyr::filter(!(ParticipantIdentifier %in% participants_to_exclude)) %>% 
   filter(Classification %in% c("SinusRhythm", "AtrialFibrillation")) %>% 

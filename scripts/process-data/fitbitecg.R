@@ -100,9 +100,7 @@ ecg_stat_summarize <- function(df) {
   return(result)
 }
 
-library(dplyr)
-
-dataset <- "fitbitecg"
+dataset <- "fitbitecg$"
 
 cat(glue::glue("Transforming data for {dataset}"),"\n")
 
@@ -114,7 +112,7 @@ vars <-
 
 # Load the desired subset of this dataset in memory and do some feature engineering for derived variables
 df <- 
-  arrow::open_dataset(file.path(downloadLocation, glue::glue("dataset_{dataset}"))) %>% 
+  arrow::open_dataset(s3$path(str_subset(dataset_paths, dataset))) %>% 
   select(all_of(c(vars))) %>% 
   filter(ResultClassification %in% c("Normal Sinus Rhythm", "Atrial Fibrillation")) %>% 
   rename(StartDate = StartTime) %>% 

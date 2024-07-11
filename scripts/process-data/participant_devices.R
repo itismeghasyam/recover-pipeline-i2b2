@@ -1,5 +1,3 @@
-library(dplyr)
-
 dataset <- c("fitbitdevices", "healthkitv2samples")
 
 cat(glue::glue("Transforming device data for {dataset}"),"\n")
@@ -15,7 +13,7 @@ vars <- list(fitbitdevices = c("ParticipantIdentifier",
 df <- 
   lapply(dataset, function(x) {
     tmp <- vars[[x]]
-    arrow::open_dataset(file.path(downloadLocation, glue::glue("dataset_{x}"))) %>% 
+    arrow::open_dataset(s3$path(str_subset(dataset_paths, dataset))) %>% 
       select(all_of(tmp)) %>% 
       dplyr::rename_with(tolower) %>% 
       collect()
