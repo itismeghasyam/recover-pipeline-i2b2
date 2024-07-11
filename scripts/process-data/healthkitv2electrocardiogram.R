@@ -143,14 +143,14 @@ df_melted_filtered <-
   mutate("SinusRhythm" = if_else(classification == "SinusRhythm", 1, NA),
          "AtrialFibrillation" = if_else(classification == "AtrialFibrillation", 1, NA)) %>% 
   select(-c(classification)) %>% 
-  recoverSummarizeR::melt_df(excluded_concepts = excluded_concepts) %>% 
+  recoverutils::melt_df(excluded_concepts = excluded_concepts) %>% 
   select(if("participantidentifier" %in% colnames(.)) "participantidentifier",
          dplyr::matches("(?<!_)date(?!_)", perl = T),
          if("concept" %in% colnames(.)) "concept",
          if("value" %in% colnames(.)) "value") %>% 
   tidyr::drop_na("value") %>% 
   mutate(value = as.numeric(value))
-cat("recoverSummarizeR::melt_df() completed.\n")
+cat("recoverutils::melt_df() completed.\n")
 
 # Generate i2b2 summaries
 df_summarized <- 
@@ -163,7 +163,7 @@ cat("ecg_stat_summarize() completed.\n")
 
 # Add i2b2 columns from concept map (ontology file) and clean the output
 output_concepts <- 
-  recoverSummarizeR::process_df(df_summarized, 
+  recoverutils::process_df(df_summarized, 
                                 concept_map, 
                                 concept_replacements_reversed, 
                                 concept_map_concepts = "CONCEPT_CD", 
@@ -173,7 +173,7 @@ output_concepts <-
   dplyr::mutate(dplyr::across(.cols = dplyr::everything(), .fns = as.character)) %>% 
   replace(is.na(.), "<null>") %>% 
   dplyr::filter(nval_num != "<null>" | tval_char != "<null>")
-cat("recoverSummarizeR::process_df() completed.\n")
+cat("recoverutils::process_df() completed.\n")
 
 # Identify the participants who have output concepts derived from healthkit variables
 curr_hk_participants <- 

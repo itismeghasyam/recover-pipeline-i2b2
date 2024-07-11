@@ -1,5 +1,5 @@
 library(synapser)
-library(recoverSummarizeR)
+library(recoverutils)
 library(dplyr)
 
 cat("Fetching data\n")

@@ -86,7 +86,7 @@ output_concepts <-
   dplyr::select(participantidentifier, startdate, enddate, 
                 concept, valtype_cd, nval_num, tval_char, UNITS_CD) %>% 
   dplyr::rename(units_cd = UNITS_CD)
-cat("recoverSummarizeR::process_df() completed.\n")
+cat("recoverutils::process_df() completed.\n")
 
 # Write the output
 output_concepts %>% 

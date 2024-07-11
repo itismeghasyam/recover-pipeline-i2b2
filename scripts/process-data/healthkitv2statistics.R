@@ -55,9 +55,9 @@ df_summarized <-
   df_melted_filtered %>% 
   rename(enddate = "date") %>% 
   select(all_of(c("participantidentifier", "startdate", "enddate", "concept", "value"))) %>% 
-  recoverSummarizeR::stat_summarize() %>% 
+  recoverutils::stat_summarize() %>% 
   distinct()
-cat("recoverSummarizeR::stat_summarize() completed.\n")
+cat("recoverutils::stat_summarize() completed.\n")
 
 tmp_concept_replacements <- c("dailysteps" = "steps")
 
@@ -73,7 +73,7 @@ output_concepts <-
   dplyr::mutate(dplyr::across(.cols = dplyr::everything(), .fns = as.character)) %>% 
   replace(is.na(.), "<null>") %>% 
   dplyr::filter(nval_num != "<null>" | tval_char != "<null>")
-cat("recoverSummarizeR::process_df() completed.\n")
+cat("recoverutils::process_df() completed.\n")
 
 # Identify the participants who have output concepts derived from healthkit variables
 curr_hk_participants <- 

@@ -14,7 +14,7 @@ latest_commit_tree_url <-
   latest_commit$html_url %>% 
   stringr::str_replace("commit", "tree")
 
-recoverSummarizeR::store_in_syn(
+recoverutils::store_in_syn(
   synFolderID = synFolderID, 
   filepath = file.path(outputConceptsDir, "output_concepts.csv"), 
   used_param = c(ontologyFileID, parquetDirID, selectedVarsFileID), 
