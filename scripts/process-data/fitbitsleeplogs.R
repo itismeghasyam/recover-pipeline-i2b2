@@ -336,7 +336,7 @@ for (col_name in names(df_filtered)) {
 # Pivot data frames from long to wide
 df_melted_filtered <- 
   df_filtered %>% 
-  recoverSummarizeR::melt_df(excluded_concepts = excluded_concepts) %>% 
+  recoverutils::melt_df(excluded_concepts = excluded_concepts) %>% 
   select(if("participantidentifier" %in% colnames(.)) "participantidentifier",
          dplyr::matches("(?<!_)date(?!_)", perl = T),
          if("concept" %in% colnames(.)) "concept",
@@ -368,7 +368,7 @@ numepisodes_df_melted_filtered_weekly <-
   tidyr::drop_na("value") %>%
   mutate(value = as.numeric(value))
 
-cat("recoverSummarizeR::melt_df() completed.\n")
+cat("recoverutils::melt_df() completed.\n")
 
 # Generate i2b2 summaries
 df_summarized <- 
@@ -403,13 +403,13 @@ cat("sleeplogs_stat_summarize() completed.\n")
 
 # Add i2b2 columns from concept map (ontology file) and clean the output
 output_concepts <- 
-  process_df(final_df_summarized, concept_map, concept_replacements_reversed, concept_map_concepts = "CONCEPT_CD", concept_map_units = "UNITS_CD") %>% 
+  recoverutils::process_df(final_df_summarized, concept_map, concept_replacements_reversed, concept_map_concepts = "CONCEPT_CD", concept_map_units = "UNITS_CD") %>% 
   dplyr::mutate(nval_num = signif(nval_num, 9)) %>% 
   dplyr::arrange(concept) %>% 
   dplyr::mutate(dplyr::across(.cols = dplyr::everything(), .fns = as.character)) %>% 
   replace(is.na(.), "<null>") %>% 
   dplyr::filter(nval_num != "<null>" | tval_char != "<null>")
-cat("recoverSummarizeR::process_df() completed.\n")
+cat("recoverutils::process_df() completed.\n")
 
 # Identify the participants who have output concepts derived from fitbit variables
 curr_fitbit_participants <- 
