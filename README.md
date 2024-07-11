@@ -126,12 +126,10 @@ Parameter | Definition | Example
 ---|---|---
 | `ontologyFileID` | A Synapse ID for the the i2b2 concepts map ontology file stored in Synapse. | syn12345678
 | `parquetDirID` | A Synapse ID for a folder entity in Synapse where the input data is stored. This should be the folder housing the post-ETL parquet data. | syn12345678
-| `deleteExistingDir` | Boolean representing if you want the `downloadLocation` folder to be removed before syncing input data there. Setting this to `TRUE` ensures that there is a new, clean location to sync the input data to and keep it isolated from input data that is old, unwanted, modified, etc. | `TRUE`
 | `concept_replacements` | A named vector of strings and their replacements. The names must be valid values of the `concept_filter_col` column of the `concept_map` data frame. For RECOVER, `concept_map` is the ontology file data frame. | R Example<br>c('mins' = 'minutes', 'avghr' = 'averageheartrate', 'spo2' = 'spo2\_', 'hrv' = 'hrv_dailyrmssd', 'restinghr' = 'restingheartrate', 'sleepbrth' = 'sleepsummarybreath') | concept_cd
 | `synFolderID` | A Synapse ID for a folder entity in Synapse where you want to store the final output files. | syn12345678
 | `s3bucket` | The name of the S3 bucket containing input data | recover-bucket
 | `s3basekey` | The base key of the S3 bucket containing input data. | main/archive/2024-.../
-| `downloadLocation` | The location to sync input files to. | ./parquet
 | `selectedVarsFileID` | A Synapse ID for the CSV file listing which datasets and variables have been selected for use in this pipeline | syn12345678
 | `outputConceptsDir` | The location to save intermediate and final i2b2 summary files to | ./output-concepts
 
