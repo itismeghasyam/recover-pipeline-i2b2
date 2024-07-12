@@ -1,8 +1,8 @@
 library(tidyverse)
 
-cat("Fetching data\n")
+cat("\n----Fetching data and connecting to S3 bucket----\n")
 
-synapser::synLogin()
+login <- synapser::synLogin()
 
 # Get input files from synapse
 concept_map <- 
@@ -61,4 +61,5 @@ if (!dir.exists(outputConceptsDir)) {
   dir.create(outputConceptsDir)
 }
 
-cat("Finished fetching data\n\n")
+cat("\n----Finished----\n")
+

@@ -1,4 +1,4 @@
-cat("Creating final output concepts\n")
+cat("\n----Creating final output concepts----\n")
 
 # Read each dataset's (intermediate) i2b2 output concepts CSV file, combine 
 # them, and de-duplicate data if it already exists (fitbit data is highest 
@@ -66,4 +66,4 @@ rm(datasets,
    valid_participants
 )
 
-cat("Finished creating final output concepts\n\n")
+cat("\n----Finished creating final output concepts----\n")
