@@ -91,7 +91,7 @@ output_concepts %>%
   write.csv(file.path(outputConceptsDir, "participant_devices.csv"), row.names = F)
 cat(glue::glue("participant_devices written to {file.path(outputConceptsDir, 'participant_devices.csv')}"), "\n")
 
-cat(glue::glue("Finished tansforming device data for {dataset}"),"\n\n")
+cat("----Finished----\n")
 
 # Remove objects created here from the global environment
 rm(dataset,

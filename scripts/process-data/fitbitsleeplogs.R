@@ -432,7 +432,7 @@ output_concepts %>%
   write.csv(file.path(outputConceptsDir, glue::glue("{dataset}.csv")), row.names = F)
 cat(glue::glue("output_concepts written to {file.path(outputConceptsDir, paste0(dataset, '.csv'))}"),"\n")
 
-cat(paste0("\n----", glue::glue("Finished transforming data for {dataset}"),"\n"))
+cat("----Finished----\n")
 
 # Remove objects created here from the global environment
 rm(sleeplogs_stat_summarize,

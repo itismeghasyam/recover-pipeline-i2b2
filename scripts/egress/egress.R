@@ -38,4 +38,4 @@ rm(latest_commit,
    file_name
 )
 
-cat("\n----Finished egress----\n")
+cat("----Finished----\n")
