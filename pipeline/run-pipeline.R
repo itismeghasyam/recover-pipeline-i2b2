@@ -1,7 +1,9 @@
 # Get config variables
-list2env(x = config::get(file = "config/config.yml", 
-                         config = "staging"),
-         envir = .GlobalEnv)
+list2env(
+  x = config::get(file = "config/config.yml", 
+                  config = "staging"),
+  envir = .GlobalEnv
+)
 
 # Fetch data
 tictoc::tic(msg = "INFO: Fetch data")

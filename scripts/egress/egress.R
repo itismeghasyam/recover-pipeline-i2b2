@@ -1,6 +1,7 @@
-cat("Beginning egress: storing output concepts, input concept map, and input variable list in Synapse\n")
+cat("\n----Beginning egress: storing output concepts, 
+    input concept map, and input variable list in Synapse----\n")
 
-synapser::synLogin()
+login <- synapser::synLogin()
 
 # Write the following to Synapse: 1) the final output concepts data, 2) the input data used in this pipeline
 latest_commit <- 
@@ -37,4 +38,4 @@ rm(latest_commit,
    file_name
 )
 
-cat("Finished egress\n\n")
+cat("\n----Finished egress----\n")

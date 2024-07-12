@@ -1,8 +1,6 @@
-library(dplyr)
-
 dataset <- "fitbitactivitylogs"
 
-cat(glue::glue("Transforming data for {dataset}"),"\n")
+cat(paste0("\n----", glue::glue("Transforming data for {dataset}"), "----\n"))
 
 # Get variables for this dataset
 vars <- 
@@ -12,7 +10,7 @@ vars <-
 
 # Load the desired subset of this dataset in memory
 df <- 
-  arrow::open_dataset(file.path(downloadLocation, glue::glue("dataset_{dataset}"))) %>% 
+  arrow::open_dataset(s3$path(str_subset(dataset_paths, dataset))) %>% 
   select(all_of(vars)) %>% 
   collect()
 
@@ -95,7 +93,7 @@ output_concepts %>%
   write.csv(file.path(outputConceptsDir, glue::glue("{dataset}.csv")), row.names = F)
 cat(glue::glue("output_concepts written to {file.path(outputConceptsDir, paste0(dataset, '.csv'))}"),"\n")
 
-cat(glue::glue("Finished transforming data for {dataset}"),"\n\n")
+cat(paste0("\n----", glue::glue("Finished transforming data for {dataset}"),"\n"))
 
 # Remove objects created here from the global environment
 rm(dataset,
