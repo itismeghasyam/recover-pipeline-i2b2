@@ -61,5 +61,5 @@ if (!dir.exists(outputConceptsDir)) {
   dir.create(outputConceptsDir)
 }
 
-cat("\n----Finished----\n")
+cat("----Finished----\n")
 

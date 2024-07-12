@@ -1,3 +1,4 @@
+tictoc::tic(msg = "INFO: Total execution time")
 # Get config variables
 list2env(
   x = config::get(file = "config/config.yml", 
@@ -31,4 +32,5 @@ tictoc::toc()
 # Egress
 tictoc::tic(msg = "INFO: Store in Synapse")
 source("scripts/egress/egress.R")
+tictoc::toc()
 tictoc::toc()

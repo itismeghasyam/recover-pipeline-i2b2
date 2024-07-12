@@ -66,4 +66,4 @@ rm(datasets,
    valid_participants
 )
 
-cat("\n----Finished creating final output concepts----\n")
+cat("----Finished----\n")
