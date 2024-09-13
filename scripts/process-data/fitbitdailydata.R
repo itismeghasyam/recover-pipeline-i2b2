@@ -54,6 +54,7 @@ for (col_name in names(df_filtered)) {
 }
 
 # Pivot data frame from long to wide
+cat("recoverutils::melt_df()....")
 df_melted_filtered <- 
   df_filtered %>% 
   recoverutils::melt_df(excluded_concepts = excluded_concepts) %>% 
@@ -63,9 +64,10 @@ df_melted_filtered <-
          if("value" %in% colnames(.)) "value") %>% 
   tidyr::drop_na("value") %>% 
   mutate(value = as.numeric(value))
-cat("recoverutils::melt_df() completed.\n")
+cat("OK\n")
 
 # Generate i2b2 summaries
+cat("recoverutils::stat_summarize()....")
 df_summarized <- 
   df_melted_filtered %>% 
   rename(startdate = dplyr::any_of(c("date", "datetime"))) %>% 
@@ -73,9 +75,10 @@ df_summarized <-
   select(all_of(c("participantidentifier", "startdate", "enddate", "concept", "value"))) %>% 
   recoverutils::stat_summarize() %>% 
   distinct()
-cat("recoverutils::stat_summarize() completed.\n")
+cat("OK\n")
 
 # Add i2b2 columns from concept map (ontology file) and clean the output
+cat("recoverutils::process_df()....")
 output_concepts <- 
   recoverutils::process_df(df_summarized, 
              concept_map, 
@@ -87,7 +90,7 @@ output_concepts <-
   dplyr::mutate(dplyr::across(.cols = dplyr::everything(), .fns = as.character)) %>% 
   replace(is.na(.), "<null>") %>% 
   dplyr::filter(nval_num != "<null>" | tval_char != "<null>")
-cat("recoverutils::process_df() completed.\n")
+cat("OK\n")
 
 # Identify the participants who have output concepts derived from fitbit variables
 curr_fitbit_participants <- 

@@ -15,7 +15,6 @@
 #' `participantidentifier` and `concept` for all data, and 
 #' `participantidentifier`, `concept`, `year`, `week` for weekly summaries).
 sleeplogs_stat_summarize <- function(df) {
-  cat("Running sleeplogs_stat_summarize()...\n")
   
   if (!is.data.frame(df)) stop("df must be a data frame")
   if (!all(c("participantidentifier", "concept", "value") %in% colnames(df))) stop("'participantidentifier', 'concept', and 'value' columns must be present in df")
@@ -332,6 +331,7 @@ for (col_name in names(df_filtered)) {
 }
 
 # Pivot data frames from long to wide
+cat("recoverutils::melt_df()....")
 df_melted_filtered <- 
   df_filtered %>% 
   recoverutils::melt_df(excluded_concepts = excluded_concepts) %>% 
@@ -366,9 +366,10 @@ numepisodes_df_melted_filtered_weekly <-
   tidyr::drop_na("value") %>%
   mutate(value = as.numeric(value))
 
-cat("recoverutils::melt_df() completed.\n")
+cat("OK\n")
 
 # Generate i2b2 summaries
+cat("sleeplogs_stat_summarize()....")
 df_summarized <- 
   df_melted_filtered %>% 
   select(all_of(c("participantidentifier", "startdate", "enddate", "concept", "value"))) %>% 
@@ -397,9 +398,10 @@ final_df_summarized <-
                    numepisodes_df_summarized_weekly) %>% 
   dplyr::distinct()
 
-cat("sleeplogs_stat_summarize() completed.\n")
+cat("OK\n")
 
 # Add i2b2 columns from concept map (ontology file) and clean the output
+cat("recoverutils::process_df()....")
 output_concepts <- 
   recoverutils::process_df(final_df_summarized, concept_map, concept_replacements_reversed, concept_map_concepts = "CONCEPT_CD", concept_map_units = "UNITS_CD") %>% 
   dplyr::mutate(nval_num = signif(nval_num, 9)) %>% 
@@ -407,7 +409,7 @@ output_concepts <-
   dplyr::mutate(dplyr::across(.cols = dplyr::everything(), .fns = as.character)) %>% 
   replace(is.na(.), "<null>") %>% 
   dplyr::filter(nval_num != "<null>" | tval_char != "<null>")
-cat("recoverutils::process_df() completed.\n")
+cat("OK\n")
 
 # Identify the participants who have output concepts derived from fitbit variables
 curr_fitbit_participants <- 
