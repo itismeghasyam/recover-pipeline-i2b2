@@ -66,6 +66,7 @@ df_joined <-
 # Add i2b2 columns from concept map (ontology file) and clean the output
 concept_map_concepts <- "CONCEPT_CD"
 concept_map_units <- "UNITS_CD"
+cat("recoverutils::process_df()....")
 output_concepts <- 
   df_joined %>% 
   dplyr::mutate(valtype_cd = dplyr::case_when(class(value) == "numeric" ~ "N", 
@@ -84,7 +85,7 @@ output_concepts <-
   dplyr::select(participantidentifier, startdate, enddate, 
                 concept, valtype_cd, nval_num, tval_char, UNITS_CD) %>% 
   dplyr::rename(units_cd = UNITS_CD)
-cat("recoverutils::process_df() completed.\n")
+cat("OK\n")
 
 # Write the output
 output_concepts %>% 

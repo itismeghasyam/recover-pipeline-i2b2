@@ -22,3 +22,8 @@ staging:
 prod:
   inherits: staging
   synFolderID: syn51406700
+
+internal:
+  inherits: staging
+  parquetDirID: syn63135213
+  s3basekey: staging/2024-09-10
