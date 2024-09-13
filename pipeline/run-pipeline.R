@@ -2,7 +2,7 @@ tictoc::tic(msg = "INFO: Total execution time")
 # Get config variables
 list2env(
   x = config::get(file = "config/config.yml", 
-                  config = "staging"),
+                  config = "internal"),
   envir = .GlobalEnv
 )
 
