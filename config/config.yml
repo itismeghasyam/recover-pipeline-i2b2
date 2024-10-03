@@ -18,6 +18,7 @@ staging:
   s3basekey: main/archive/2024-06-13/
   selectedVarsFileID: syn53503994
   outputConceptsDir: ./temp-output-concepts
+  tempOutputConceptSynID: syn53822708
 
 prod:
   inherits: staging
