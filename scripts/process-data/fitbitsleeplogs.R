@@ -275,11 +275,11 @@ rem_fragmentation_index <-
             by = join_by("ParticipantIdentifier", "LogId")) %>% 
   filter(SleepLevelRem > 0) %>%
   mutate(SleepLevelRem = as.numeric(SleepLevelRem),
-         remFragmentationIndex = remTransitions/(SleepLevelRem/60)) %>% 
-  select(ParticipantIdentifier, LogId, remFragmentationIndex)
+         remFragmentationInd = remTransitions/(SleepLevelRem/60)) %>% 
+  select(ParticipantIdentifier, LogId, remFragmentationInd)
 
 # Merge the original df with the numawakenings, remOnsetLatency, and
-# remFragmentationIndex dfs to create a united df
+# remFragmentationInd dfs to create a united df
 df_joined <- 
   left_join(x = df, y = numawakenings_logid_filtered, by = join_by("ParticipantIdentifier", "LogId")) %>% 
   left_join(y = rem_onset_latency, by = join_by("ParticipantIdentifier", "LogId")) %>% 
